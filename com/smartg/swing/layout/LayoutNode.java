@@ -260,6 +260,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    }
 	}
 
+	Component getComponent() {
+	    return component;
+	}
+
 	@Override
 	public void remove(LayoutNode layout) {
 

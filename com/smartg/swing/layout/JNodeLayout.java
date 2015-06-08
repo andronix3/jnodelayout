@@ -67,7 +67,11 @@ public class JNodeLayout implements LayoutManager2 {
      */
     public void setHorizontalAlignment(String nodeName, NodeAlignment alignment) {
 	LayoutNode gl = map.get(nodeName);
-	gl.setHorizontalAlignment(alignment);
+	if (gl != null) {
+	    gl.setHorizontalAlignment(alignment);
+	} else {
+	    Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+	}
     }
 
     /**
@@ -79,7 +83,11 @@ public class JNodeLayout implements LayoutManager2 {
      */
     public void setVerticalAlignment(String nodeName, NodeAlignment alignment) {
 	LayoutNode gl = map.get(nodeName);
-	gl.setVerticalAlignment(alignment);
+	if (gl != null) {
+	    gl.setVerticalAlignment(alignment);
+	} else {
+	    Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+	}
     }
 
     /**
@@ -91,7 +99,11 @@ public class JNodeLayout implements LayoutManager2 {
      */
     public void setHorizontalAlignment(Component comp, NodeAlignment alignment) {
 	LayoutNode gl = byComponent.get(comp);
-	gl.setHorizontalAlignment(alignment);
+	if (gl != null) {
+	    gl.setHorizontalAlignment(alignment);
+	} else {
+	    Logger.getGlobal().warning("LeafNode not found for " + comp);
+	}
     }
 
     /**
@@ -103,7 +115,11 @@ public class JNodeLayout implements LayoutManager2 {
      */
     public void setVerticalAlignment(Component comp, NodeAlignment alignment) {
 	LayoutNode gl = byComponent.get(comp);
-	gl.setVerticalAlignment(alignment);
+	if (gl != null) {
+	    gl.setVerticalAlignment(alignment);
+	} else {
+	    Logger.getGlobal().warning("LeafNode not found for " + comp);
+	}
     }
 
     public void addLayoutNode(LayoutNode layoutNode, String parentNodeName, Object constraints) {
@@ -148,10 +164,10 @@ public class JNodeLayout implements LayoutManager2 {
 
 	bounds.height -= insets.top + insets.bottom;
 	bounds.y += insets.top;
-	
+
 	int hgap = getRoot().getHgap();
 	int vgap = getRoot().getVgap();
-	
+
 	bounds.width -= hgap;
 	bounds.height -= vgap;
 
@@ -192,6 +208,9 @@ public class JNodeLayout implements LayoutManager2 {
 	    if (!child.isLeaf()) {
 		putNode(child);
 		syncNode(child);
+	    } else {
+		LeafNode leafNode = (LeafNode) child;
+		byComponent.put(leafNode.getComponent(), leafNode);
 	    }
 	}
     }
