@@ -148,11 +148,34 @@ public class JNodeLayout implements LayoutManager2 {
     }
 
     public Dimension preferredLayoutSize(Container parent) {
-	return root.preferredSize();
+	Insets insets = parent.getInsets();
+	Dimension preferredSize = root.preferredSize();
+	preferredSize.width += insets.left + insets.right;
+	preferredSize.height += insets.top + insets.bottom;
+	preferredSize.width += root.getHgap();
+	preferredSize.height += root.getVgap();
+	
+	return preferredSize;
     }
 
     public Dimension minimumLayoutSize(Container parent) {
 	return preferredLayoutSize(parent);
+    }
+    
+    public void setHgap(int hgap) {
+	root.setHgap(hgap);
+    }
+    
+    public void setVgap(int vgap) {
+	root.setVgap(vgap);
+    }
+    
+    public int getVgap() {
+	return root.getVgap();
+    }
+    
+    public int getHgap() {
+	return root.getHgap();
     }
 
     public void layoutContainer(Container parent) {

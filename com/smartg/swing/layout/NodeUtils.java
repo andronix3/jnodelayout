@@ -60,7 +60,7 @@ public class NodeUtils {
 	}
 
 	public void add(Component comp, int w) {
-	    if (x >= width || (x + w) >= width) {
+	    if (x >= width || (x + w) > width) {
 		x = 0;
 		y++;
 	    }
