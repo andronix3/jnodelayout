@@ -62,12 +62,23 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
     public abstract Dimension preferredSize();
 
+    public void add(LayoutNode layout) {
+	add(layout, null);
+    }
+
     public abstract void add(LayoutNode layout, Object constraints);
 
     public abstract void remove(LayoutNode layout);
 
+    public void print(int level) {
+	System.out.println(create(level) + name);
+	for (LayoutNode node : this) {
+	    node.print(level + 4);
+	}
+    }
+
     /**
-     * we have to remove leaf nodes (which was added not through LayoutManager),
+     * We have to remove leaf nodes (which was added not through LayoutManager),
      * after their child-component was removed from target Container;
      */
     protected void removeInvalidNodes() {
@@ -75,6 +86,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    LayoutNode node = invalidNodes.remove(0);
 	    remove(node);
 	}
+    }
+
+    public LeafNode add(Component comp) {
+	return add(comp, null);
     }
 
     public LeafNode add(Component comp, Object constraints) {
@@ -181,6 +196,14 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	return dy;
     }
 
+    String create(int length) {
+	StringBuffer sb = new StringBuffer(length);
+	for (int i = 0; i < length; i++) {
+	    sb.append(' ');
+	}
+	return sb.toString();
+    }
+
     public static class LeafNode extends LayoutNode {
 	private Component component;
 	private Container container;
@@ -194,18 +217,26 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public Dimension preferredSize() {
 	    if (component.getParent() != container) {
-		getParent().setInvalidNode(this);
-		return new Dimension();
+		if (container == null) {
+		    container = component.getParent();
+		} else {
+		    getParent().setInvalidNode(this);
+		    return new Dimension();
+		}
 	    }
 	    int hgap = getHgap();
 	    int vgap = getVgap();
 
-	    Dimension preferredSize = component.getPreferredSize();
+	    if (component.isVisible()) {
 
-	    preferredSize.width += hgap;
-	    preferredSize.height += vgap;
+		Dimension preferredSize = component.getPreferredSize();
 
-	    return preferredSize;
+		preferredSize.width += hgap;
+		preferredSize.height += vgap;
+
+		return preferredSize;
+	    }
+	    return new Dimension();
 	}
 
 	public Iterator<LayoutNode> iterator() {
@@ -267,6 +298,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void remove(LayoutNode layout) {
 
+	}
+
+	@Override
+	public void print(int level) {
+	    System.out.println(create(level) + component);
 	}
     }
 
@@ -411,8 +447,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void remove(LayoutNode layout) {
 	    list.remove(layout);
+	    Thread.dumpStack();
 	}
-
     }
 
     public static class RectNode extends LayoutNode {

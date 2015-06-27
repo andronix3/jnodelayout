@@ -38,9 +38,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import com.smartg.swing.layout.JNodeLayout;
 import com.smartg.swing.layout.LayoutNode;
+import com.smartg.swing.layout.NodeAlignment;
 import com.smartg.swing.layout.NodeUtils.GridHelper;
 
 public class JNL_Grid_Demo {
@@ -49,6 +51,12 @@ public class JNL_Grid_Demo {
 
 	String rootName = "root";
 	JNodeLayout layout = new JNodeLayout(new LayoutNode.GridNode(rootName));
+	layout.setHgap(10);
+	layout.setVgap(10);
+	layout.getRoot().setHorizontalAlignment(NodeAlignment.CENTER);
+	layout.getRoot().setVerticalAlignment(NodeAlignment.CENTER);
+	
+	
 
 	JPanel panel = new JPanel();
 
@@ -56,10 +64,10 @@ public class JNL_Grid_Demo {
 
 	GridHelper gridHelper = new GridHelper(panel, rootName, 2);
 
-	gridHelper.add(new JLabel("Label 1"));
+	gridHelper.add(new JLabel("Label 1:", SwingConstants.RIGHT));
 	gridHelper.add(new JTextField(10));
 
-	gridHelper.add(new JLabel("Label 2"));
+	gridHelper.add(new JLabel("Label 2:", SwingConstants.RIGHT));
 	gridHelper.add(new JTextField(10));
 
 	gridHelper.add(new JLabel(""));

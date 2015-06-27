@@ -83,7 +83,7 @@ public class DiskVievDemo {
 	layout.setHorizontalAlignment("bottomLineRight", NodeAlignment.RIGHT);
 
 	NodeConstraints topLine = new NodeConstraints("topLine");
-	panel.add(new JLabel("Hightlight: "), topLine);
+	panel.add(new JLabel("Highlight: "), topLine);
 	panel.add(new JTextField(35), topLine);
 	panel.add(new SlimButton("..."), topLine);
 	panel.add(new JButton("ShowNext"), topLine);
