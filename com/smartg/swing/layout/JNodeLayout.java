@@ -154,26 +154,26 @@ public class JNodeLayout implements LayoutManager2 {
 	preferredSize.height += insets.top + insets.bottom;
 	preferredSize.width += root.getHgap();
 	preferredSize.height += root.getVgap();
-	
+
 	return preferredSize;
     }
 
     public Dimension minimumLayoutSize(Container parent) {
 	return preferredLayoutSize(parent);
     }
-    
+
     public void setHgap(int hgap) {
 	root.setHgap(hgap);
     }
-    
+
     public void setVgap(int vgap) {
 	root.setVgap(vgap);
     }
-    
+
     public int getVgap() {
 	return root.getVgap();
     }
-    
+
     public int getHgap() {
 	return root.getHgap();
     }
@@ -210,9 +210,20 @@ public class JNodeLayout implements LayoutManager2 {
 	    return;
 	}
 	NodeConstraints constr = (NodeConstraints) constraints;
-	LayoutNode gLayout = map.get(constr.getName());
-	LeafNode leaf = gLayout.add(comp, constr.getConstraints());
-	byComponent.put(comp, leaf);
+	LayoutNode node = map.get(constr.getName());
+	if (node == null) {
+	    node = root.findNode(constr.getName());
+	    if (node != null) {
+		map.put(constr.getName(), node);
+	    }
+	}
+	if (node != null) {
+	    LeafNode leaf = node.add(comp, constr.getConstraints());
+	    byComponent.put(comp, leaf);
+	}
+	else {
+	    Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Node not found: " + constr.getName(), new NullPointerException());
+	}
     }
 
     public LayoutNode getRoot() {

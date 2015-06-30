@@ -67,6 +67,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     }
 
     public abstract void add(LayoutNode layout, Object constraints);
+    
+    public abstract int getCount();
 
     public abstract void remove(LayoutNode layout);
 
@@ -75,6 +77,19 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	for (LayoutNode node : this) {
 	    node.print(level + 4);
 	}
+    }
+    
+    public LayoutNode findNode(String name) {
+	if(name.equals(getName())) {
+	    return this;
+	}
+	for(LayoutNode node: this) {
+	    LayoutNode res = node.findNode(name);
+	    if(res != null) {
+		return res;
+	    }
+	}
+	return null;
     }
 
     /**
@@ -304,6 +319,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	public void print(int level) {
 	    System.out.println(create(level) + component);
 	}
+
+	@Override
+	public int getCount() {
+	    return 1;
+	}
     }
 
     public static class VerticalNode extends LayoutNode {
@@ -374,6 +394,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void remove(LayoutNode layout) {
 	    list.remove(layout);
+	}
+
+	@Override
+	public int getCount() {
+	    return list.size();
 	}
     }
 
@@ -447,7 +472,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void remove(LayoutNode layout) {
 	    list.remove(layout);
-	    Thread.dumpStack();
+	}
+
+	@Override
+	public int getCount() {
+	    return list.size();
 	}
     }
 
@@ -520,6 +549,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 		n.layout(new Rectangle(dest.x + x, dest.y + y, w, h));
 	    }
+	}
+
+	@Override
+	public int getCount() {
+	    return map.size();
 	}
     }
 
@@ -607,7 +641,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void layout(Rectangle dest) {
 	    removeInvalidNodes();
-
+	    
 	    final int xOffset = dest.x;
 	    final int yOffset = dest.y;
 
@@ -657,6 +691,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void remove(LayoutNode layout) {
 	    map.remove(layout);
+	}
+
+	@Override
+	public int getCount() {
+	    return map.size();
 	}
     }
 
