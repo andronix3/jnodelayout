@@ -183,10 +183,10 @@ public class JNodeLayout implements LayoutManager2 {
 	Insets insets = parent.getInsets();
 
 	bounds.width -= insets.left + insets.right;
-	bounds.x += insets.left;
+	bounds.x = insets.left;
 
 	bounds.height -= insets.top + insets.bottom;
-	bounds.y += insets.top;
+	bounds.y = insets.top;
 
 	int hgap = getRoot().getHgap();
 	int vgap = getRoot().getVgap();

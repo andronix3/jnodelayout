@@ -67,7 +67,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     }
 
     public abstract void add(LayoutNode layout, Object constraints);
-    
+
     public abstract int getCount();
 
     public abstract void remove(LayoutNode layout);
@@ -78,14 +78,14 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    node.print(level + 4);
 	}
     }
-    
+
     public LayoutNode findNode(String name) {
-	if(name.equals(getName())) {
+	if (name.equals(getName())) {
 	    return this;
 	}
-	for(LayoutNode node: this) {
+	for (LayoutNode node : this) {
 	    LayoutNode res = node.findNode(name);
-	    if(res != null) {
+	    if (res != null) {
 		return res;
 	    }
 	}
@@ -192,21 +192,33 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     }
 
     protected int adjustX(Rectangle dest, Dimension preferredSize) {
+	int destWidth = dest.width;
+	int preferredWidth = preferredSize.width;
+	return adjustX(destWidth, preferredWidth);
+    }
+
+    protected int adjustX(int destWidth, int preferredWidth) {
 	int dx = 0;
 	if (horizontalAlignment == NodeAlignment.RIGHT) {
-	    dx = Math.max(0, dest.width - preferredSize.width);
+	    dx = Math.max(0, destWidth - preferredWidth);
 	} else if (horizontalAlignment == NodeAlignment.CENTER) {
-	    dx = Math.max(0, (dest.width - preferredSize.width) / 2);
+	    dx = Math.max(0, (destWidth - preferredWidth) / 2);
 	}
 	return dx;
     }
 
     protected int adjustY(Rectangle dest, Dimension preferredSize) {
+	int destHeight = dest.height;
+	int preferredHeight = preferredSize.height;
+	return adjustY(destHeight, preferredHeight);
+    }
+
+    protected int adjustY(int destHeight, int preferredHeight) {
 	int dy = 0;
 	if (verticalAlignment == NodeAlignment.BOTTOM) {
-	    dy = Math.max(0, dest.height - preferredSize.height);
+	    dy = Math.max(0, destHeight - preferredHeight);
 	} else if (verticalAlignment == NodeAlignment.CENTER) {
-	    dy = Math.max(0, (dest.height - preferredSize.height) / 2);
+	    dy = Math.max(0, (destHeight - preferredHeight) / 2);
 	}
 	return dy;
     }
@@ -293,8 +305,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		    my = dest.getHeight() / ps.getHeight();
 		}
 
-		int dy = adjustY(dest, ps);
-		int dx = adjustX(dest, ps);
+		int dx = adjustX(dest.height, ps.height);
+		int dy = adjustY(dest.width, ps.width);
 
 		int x = dest.x + dx + hgap;
 		int y = dest.y + dy + vgap;
@@ -376,9 +388,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		m = dest.getHeight() / ps.getHeight();
 	    }
 
-	    int dy = adjustY(dest, ps);
-
-	    int dx = adjustX(dest, ps);
+	    int dx = adjustX(dest.width, ps.width);
+	    int dy = adjustY(dest.height, ps.height);
 
 	    int x = dest.x + dx;
 	    int y = dest.y + dy;
@@ -452,9 +463,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		m = dest.getWidth() / ps.getWidth();
 	    }
 
-	    int dy = adjustY(dest, ps);
-
-	    int dx = adjustX(dest, ps);
+	    int dx = adjustX(dest.height, ps.height);
+	    int dy = adjustY(dest.width, ps.width);
 
 	    int x = dest.x + dx;
 	    int y = dest.y + dy;
@@ -614,7 +624,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    }
 	}
 
-	private Rectangle getGridBounds() {
+	public Rectangle getGridBounds() {
 	    Rectangle res = new Rectangle();
 	    for (LayoutNode gl : this) {
 		Rectangle r = map.get(gl);
@@ -633,6 +643,9 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 	@Override
 	public void add(LayoutNode layout, Object constraints) {
+	    if (constraints == null) {
+		throw new NullPointerException();
+	    }
 	    Rectangle r = (Rectangle) constraints;
 	    map.put(layout, r);
 	    layout.parent = this;
@@ -641,9 +654,6 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public void layout(Rectangle dest) {
 	    removeInvalidNodes();
-	    
-	    final int xOffset = dest.x;
-	    final int yOffset = dest.y;
 
 	    Dimension preferredSize = preferredSize();
 
@@ -656,8 +666,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		my = dest.getHeight() / preferredSize.getHeight();
 	    }
 
-	    int dx = adjustX(dest, preferredSize);
-	    int dy = adjustY(dest, preferredSize);
+	    int dx = adjustX(dest.width - dest.x, preferredSize.width);
+	    int dy = adjustY(dest.height - dest.y, preferredSize.height);
 
 	    for (LayoutNode gl : this) {
 		Rectangle r = map.get(gl);
@@ -667,7 +677,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		double height = getYOffset(r.y, r.y + r.height);
 
 		Rectangle bounds = new Rectangle();
-		bounds.setRect(xOffset + x * mx, yOffset + y * my, width * mx, height * my);
+		bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
 		gl.layout(bounds);
 	    }
 	}
