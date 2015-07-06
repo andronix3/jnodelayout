@@ -56,6 +56,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     protected ArrayList<LayoutNode> invalidNodes = new ArrayList<LayoutNode>();
     private Integer hgap, vgap;
 
+    private Container target;
+
     public LayoutNode(String name) {
 	this.name = name;
     }
@@ -71,6 +73,17 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     public abstract int getCount();
 
     public abstract void remove(LayoutNode layout);
+
+    protected Container getTarget() {
+	if (parent != null) {
+	    return parent.getTarget();
+	}
+	return target;
+    }
+
+    void setTarget(Container target) {
+	this.target = target;
+    }
 
     public void print(int level) {
 	System.out.println(create(level) + name);
@@ -108,7 +121,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     }
 
     public LeafNode add(Component comp, Object constraints) {
-	LeafNode leaf = new LeafNode(comp);
+	LeafNode leaf = new LeafNode(this, comp);
 	add(leaf, constraints);
 	return leaf;
     }
@@ -191,12 +204,6 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	}
     }
 
-    protected int adjustX(Rectangle dest, Dimension preferredSize) {
-	int destWidth = dest.width;
-	int preferredWidth = preferredSize.width;
-	return adjustX(destWidth, preferredWidth);
-    }
-
     protected int adjustX(int destWidth, int preferredWidth) {
 	int dx = 0;
 	if (horizontalAlignment == NodeAlignment.RIGHT) {
@@ -205,12 +212,6 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    dx = Math.max(0, (destWidth - preferredWidth) / 2);
 	}
 	return dx;
-    }
-
-    protected int adjustY(Rectangle dest, Dimension preferredSize) {
-	int destHeight = dest.height;
-	int preferredHeight = preferredSize.height;
-	return adjustY(destHeight, preferredHeight);
     }
 
     protected int adjustY(int destHeight, int preferredHeight) {
@@ -231,12 +232,16 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	return sb.toString();
     }
 
-    public static class LeafNode extends LayoutNode {
+    static class LeafNode extends LayoutNode {
 	private Component component;
 	private Container container;
 
-	public LeafNode(Component component) {
+	LeafNode(LayoutNode p, Component component) {
 	    super("");
+	    ((LayoutNode)this).parent = p;
+	    if(getTarget() != null) {
+		getTarget().add(component);
+	    }
 	    this.component = component;
 	    this.container = component.getParent();
 	}

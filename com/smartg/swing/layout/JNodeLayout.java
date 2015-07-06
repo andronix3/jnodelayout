@@ -59,6 +59,19 @@ public class JNodeLayout implements LayoutManager2 {
     }
 
     /**
+     * If you use this constructor you may just add Components to layout nodes,
+     * the Components will be added to target Container by LayoutManager, thus
+     * making code shorter.
+     * 
+     * @param target
+     * @param root
+     */
+    public JNodeLayout(Container target, LayoutNode root) {
+	this.root = root;
+	root.setTarget(target);
+    }
+
+    /**
      * Set horizontal alignment for node with given name
      * 
      * @param nodeName
@@ -220,8 +233,7 @@ public class JNodeLayout implements LayoutManager2 {
 	if (node != null) {
 	    LeafNode leaf = node.add(comp, constr.getConstraints());
 	    byComponent.put(comp, leaf);
-	}
-	else {
+	} else {
 	    Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Node not found: " + constr.getName(), new NullPointerException());
 	}
     }
