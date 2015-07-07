@@ -48,9 +48,9 @@ public class JNL_Rect_Demo {
     public static void main(String[] args) {
 
 	String rootName = "root";
-	JNodeLayout layout = new JNodeLayout(new LayoutNode.RectNode(rootName));
 
 	JPanel target = new JPanel();
+	JNodeLayout layout = new JNodeLayout(target, new LayoutNode.RectNode(rootName));
 
 	target.setLayout(layout);
 

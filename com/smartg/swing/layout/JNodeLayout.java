@@ -67,6 +67,7 @@ public class JNodeLayout implements LayoutManager2 {
      * @param root
      */
     public JNodeLayout(Container target, LayoutNode root) {
+	map.put("root", root);
 	this.root = root;
 	root.setTarget(target);
     }

@@ -31,6 +31,8 @@
 package com.smartg.test.jnl;
 
 import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Vector;
@@ -52,6 +54,8 @@ import javax.swing.SpinnerListModel;
 
 import com.smartg.swing.layout.JNodeLayout;
 import com.smartg.swing.layout.LayoutNode;
+import com.smartg.swing.layout.LayoutNode.HorizontalNode;
+import com.smartg.swing.layout.LayoutNode.RectNode;
 import com.smartg.swing.layout.NodeAlignment;
 import com.smartg.swing.layout.NodeConstraints;
 
@@ -59,20 +63,21 @@ public class DiskVievDemo {
 
     public static void main(String[] args) {
 	String rootName = "root";
-	LayoutNode.RectNode root = new LayoutNode.RectNode(rootName);
-	JNodeLayout layout = new JNodeLayout(root);
-	root.setHgap(10);
-	root.setVgap(10);
+	final LayoutNode.RectNode root = new LayoutNode.RectNode(rootName);
 
 	JPanel panel = new JPanel();
 
+	JNodeLayout layout = new JNodeLayout(panel, root);
+	layout.setHgap(10);
+	layout.setVgap(10);
+	
 	panel.setLayout(layout);
 
-	layout.addLayoutNode(new LayoutNode.HorizontalNode("topLine"), rootName, new Rectangle2D.Double(0, 0, 1, 0.05));
-	layout.addLayoutNode(new LayoutNode.RectNode("panelNode1"), rootName, new Rectangle2D.Double(0, 0.05, 1, 0.65));
-	layout.addLayoutNode(new LayoutNode.RectNode("panelNode2"), rootName, new Rectangle2D.Double(0, 0.7, 1, 0.25));
-	layout.addLayoutNode(new LayoutNode.HorizontalNode("bottomLine"), rootName, new Rectangle2D.Double(0, 0.95, 0.5, 0.05));
-	layout.addLayoutNode(new LayoutNode.HorizontalNode("bottomLineRight"), rootName, new Rectangle2D.Double(0.7, 0.95, 0.3, 0.05));
+	layout.addLayoutNode(new HorizontalNode("topLine"), rootName, new Rectangle2D.Double(0, 0, 1, 0.05));
+	layout.addLayoutNode(new RectNode("panelNode1"), rootName, new Rectangle2D.Double(0, 0.05, 1, 0.65));
+	layout.addLayoutNode(new RectNode("panelNode2"), rootName, new Rectangle2D.Double(0, 0.7, 1, 0.25));
+	layout.addLayoutNode(new HorizontalNode("bottomLine"), rootName, new Rectangle2D.Double(0, 0.95, 0.5, 0.05));
+	layout.addLayoutNode(new HorizontalNode("bottomLineRight"), rootName, new Rectangle2D.Double(0.7, 0.95, 0.3, 0.05));
 
 	layout.setVerticalAlignment("topLine", NodeAlignment.CENTER);
 
@@ -114,6 +119,7 @@ public class DiskVievDemo {
 	frame.add(panel);
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	frame.pack();
+	
 	frame.setVisible(true);
 
     }

@@ -105,6 +105,18 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	return null;
     }
 
+    @Override
+    public String toString() {
+	String className = getClass().getName();
+	if(className.indexOf('$') >= 0) {
+	    className = className.substring(className.indexOf('$'));
+	}
+	else {
+	    className = className.substring(className.lastIndexOf('.'));    
+	}
+	return className + " [name=" + name + "]";
+    }
+
     /**
      * We have to remove leaf nodes (which was added not through LayoutManager),
      * after their child-component was removed from target Container;
@@ -238,8 +250,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 	LeafNode(LayoutNode p, Component component) {
 	    super("");
-	    ((LayoutNode)this).parent = p;
-	    if(getTarget() != null) {
+	    ((LayoutNode) this).parent = p;
+	    if (getTarget() != null) {
 		getTarget().add(component);
 	    }
 	    this.component = component;
@@ -468,8 +480,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		m = dest.getWidth() / ps.getWidth();
 	    }
 
-	    int dx = adjustX(dest.height, ps.height);
-	    int dy = adjustY(dest.width, ps.width);
+	    int dx = adjustX(dest.width, ps.width);
+	    int dy = adjustY(dest.height, ps.height);
 
 	    int x = dest.x + dx;
 	    int y = dest.y + dy;
@@ -562,7 +574,8 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		int w = (int) (width * r.getWidth());
 		int h = (int) (height * r.getHeight());
 
-		n.layout(new Rectangle(dest.x + x, dest.y + y, w, h));
+		Rectangle bounds = new Rectangle(dest.x + x, dest.y + y, w, h);
+		n.layout(bounds);
 	    }
 	}
 
