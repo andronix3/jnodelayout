@@ -51,12 +51,12 @@ public class JNL_Border_Demo {
 
     public static void main(String[] args) {
 	LayoutNode.GridNode root = new LayoutNode.GridNode("root");
-	JNodeLayout layout = new JNodeLayout(root);
 
 	root.setHgap(5);
 	root.setVgap(5);
 	
 	JPanel target = new JPanel();
+	JNodeLayout layout = new JNodeLayout(target, root);
 
 	target.setLayout(layout);
 	String rootName = "root";

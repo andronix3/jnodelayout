@@ -31,8 +31,6 @@
 package com.smartg.test.jnl;
 
 import java.awt.Insets;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Vector;
