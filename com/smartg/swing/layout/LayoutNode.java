@@ -30,9 +30,13 @@
 
 package com.smartg.swing.layout;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -55,6 +59,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
     protected NodeAlignment verticalAlignment = NodeAlignment.STRETCHED;
     protected ArrayList<LayoutNode> invalidNodes = new ArrayList<LayoutNode>();
     private Integer hgap, vgap;
+    private Boolean debug;
 
     private Container target;
 
@@ -92,6 +97,21 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	}
     }
 
+    public boolean isDebug() {
+	if (debug != null) {
+	    return debug;
+	}
+	LayoutNode parent = getParent();
+	if (parent != null) {
+	    return parent.isDebug();
+	}
+	return false;
+    }
+
+    public void setDebug(boolean debug) {
+	this.debug = debug;
+    }
+
     public LayoutNode findNode(String name) {
 	if (name.equals(getName())) {
 	    return this;
@@ -105,14 +125,20 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	return null;
     }
 
+    void paintNode(Graphics g, Rectangle r) {
+	Graphics2D g2 = (Graphics2D) g.create();
+	g2.setColor(Color.RED);
+	g2.setStroke(new BasicStroke(2));
+	g2.drawRect(r.x, r.y, r.width, r.height);
+    }
+
     @Override
     public String toString() {
 	String className = getClass().getName();
-	if(className.indexOf('$') >= 0) {
+	if (className.indexOf('$') >= 0) {
 	    className = className.substring(className.indexOf('$'));
-	}
-	else {
-	    className = className.substring(className.lastIndexOf('.'));    
+	} else {
+	    className = className.substring(className.lastIndexOf('.'));
 	}
 	return className + " [name=" + name + "]";
     }
@@ -308,7 +334,14 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	    int vgap = getVgap();
 
 	    if (horizontalAlignment == NodeAlignment.STRETCHED && verticalAlignment == NodeAlignment.STRETCHED) {
-		component.setBounds(new Rectangle(dest.x + hgap, dest.y + vgap, dest.width - hgap, dest.height - vgap));
+		Rectangle r = new Rectangle(dest.x + hgap, dest.y + vgap, dest.width - hgap, dest.height - vgap);
+		component.setBounds(r);
+		if (isDebug()) {
+		    String s = component.getName();
+		    if(s != null) {
+			System.out.println(s + " " + r);
+		    }
+		}
 	    } else {
 		Dimension ps = preferredSize();
 
@@ -331,7 +364,14 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		double height = ps.height * my;
 		double width = ps.width * mx;
 
-		component.setBounds(new Rectangle(x, y, (int) (width - hgap), (int) (height - vgap)));
+		Rectangle r = new Rectangle(x, y, (int) (width - hgap), (int) (height - vgap));
+		component.setBounds(r);
+		if (isDebug()) {
+		    String s = component.getName();
+		    if(s != null) {
+			System.out.println(s + " " + r);
+		    }
+		}
 	    }
 	}
 
@@ -352,6 +392,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	@Override
 	public int getCount() {
 	    return 1;
+	}
+
+	@Override
+	public String toString() {
+	    return super.toString() + " [" + component.getName() + "]";
 	}
     }
 
@@ -415,6 +460,38 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		Dimension d = c.preferredSize();
 		double height = d.height * m;
 		c.layout(new Rectangle(x, y, width, (int) height));
+		y += height;
+	    }
+	}
+
+	@Override
+	void paintNode(Graphics g, Rectangle dest) {
+	    super.paintNode(g, dest);
+
+	    Dimension ps = preferredSize();
+	    int width;
+	    if (horizontalAlignment == NodeAlignment.STRETCHED) {
+		width = dest.width;
+	    } else {
+		width = Math.min(dest.width, ps.width);
+	    }
+
+	    double m = 1;
+
+	    if (dest.height < ps.height || verticalAlignment == NodeAlignment.STRETCHED) {
+		m = dest.getHeight() / ps.getHeight();
+	    }
+
+	    int dx = adjustX(dest.width, ps.width);
+	    int dy = adjustY(dest.height, ps.height);
+
+	    int x = dest.x + dx;
+	    int y = dest.y + dy;
+
+	    for (LayoutNode c : this) {
+		Dimension d = c.preferredSize();
+		double height = d.height * m;
+		c.paintNode(g, new Rectangle(x, y, width, (int) height));
 		y += height;
 	    }
 	}
@@ -492,6 +569,39 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		Rectangle bounds = new Rectangle();
 		bounds.setRect(x, y, width, height);
 		c.layout(bounds);
+		x += width;
+	    }
+	}
+
+	@Override
+	void paintNode(Graphics g, Rectangle dest) {
+	    super.paintNode(g, dest);
+	    Dimension ps = preferredSize();
+	    int height;
+	    if (verticalAlignment == NodeAlignment.STRETCHED) {
+		height = dest.height;
+	    } else {
+		height = Math.min(dest.height, ps.height);
+	    }
+
+	    double m = 1;
+
+	    if (dest.width < ps.width || horizontalAlignment == NodeAlignment.STRETCHED) {
+		m = dest.getWidth() / ps.getWidth();
+	    }
+
+	    int dx = adjustX(dest.width, ps.width);
+	    int dy = adjustY(dest.height, ps.height);
+
+	    int x = dest.x + dx;
+	    int y = dest.y + dy;
+
+	    for (LayoutNode c : this) {
+		Dimension d = c.preferredSize();
+		double width = d.width * m;
+		Rectangle bounds = new Rectangle();
+		bounds.setRect(x, y, width, height);
+		c.paintNode(g, bounds);
 		x += width;
 	    }
 	}
@@ -580,6 +690,25 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	}
 
 	@Override
+	void paintNode(Graphics g, Rectangle dest) {
+	    super.paintNode(g, dest);
+	    for (LayoutNode n : this) {
+		Rectangle2D r = map.get(n);
+		int width = dest.width;
+		int height = dest.height;
+
+		int x = (int) (width * r.getX());
+		int y = (int) (height * r.getY());
+		int w = (int) (width * r.getWidth());
+		int h = (int) (height * r.getHeight());
+
+		Rectangle bounds = new Rectangle(dest.x + x, dest.y + y, w, h);
+
+		n.paintNode(g, bounds);
+	    }
+	}
+
+	@Override
 	public int getCount() {
 	    return map.size();
 	}
@@ -660,17 +789,23 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	}
 
 	@Override
-	public void add(LayoutNode layout, Object constraints) {
+	public void add(LayoutNode node, Object constraints) {
 	    if (constraints == null) {
 		throw new NullPointerException();
 	    }
+	    if(isDebug()) {
+		System.out.println("add: " + node + " " + constraints);
+	    }
 	    Rectangle r = (Rectangle) constraints;
-	    map.put(layout, r);
-	    layout.parent = this;
+	    map.put(node, r);
+	    node.parent = this;
 	}
 
 	@Override
 	public void layout(Rectangle dest) {
+	    if (isDebug()) {
+		System.out.print("");
+	    }
 	    removeInvalidNodes();
 
 	    Dimension preferredSize = preferredSize();
@@ -697,6 +832,43 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		Rectangle bounds = new Rectangle();
 		bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
 		gl.layout(bounds);
+	    }
+	}
+
+	@Override
+	void paintNode(Graphics g, Rectangle dest) {
+	    super.paintNode(g, dest);
+
+	    Dimension preferredSize = preferredSize();
+
+	    double mx = 1;
+	    if (horizontalAlignment == NodeAlignment.STRETCHED) {
+		mx = dest.getWidth() / preferredSize.getWidth();
+	    }
+	    double my = 1;
+	    if (verticalAlignment == NodeAlignment.STRETCHED) {
+		my = dest.getHeight() / preferredSize.getHeight();
+	    }
+
+	    int dx = adjustX(dest.width - dest.x, preferredSize.width);
+	    int dy = adjustY(dest.height - dest.y, preferredSize.height);
+
+	    for (LayoutNode gl : this) {
+		Rectangle r = map.get(gl);
+		int x = getXOffset(0, r.x) + dx;
+		double width = getXOffset(r.x, r.x + r.width);
+		int y = getYOffset(0, r.y) + dy;
+		double height = getYOffset(r.y, r.y + r.height);
+
+		Rectangle bounds = new Rectangle();
+		bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
+		gl.paintNode(g, bounds);
+	    }
+	}
+	
+	public void printNodes() {
+	    for(LayoutNode node: this) {
+		System.out.println(node + " " + map.get(node));
 	    }
 	}
 

@@ -118,6 +118,8 @@ public class DiskVievDemo {
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	frame.pack();
 	
+	layout.setDebug(true);
+	
 	frame.setVisible(true);
 
     }

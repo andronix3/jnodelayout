@@ -36,9 +36,13 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.Timer;
 
 import com.smartg.swing.layout.LayoutNode.LeafNode;
 
@@ -52,10 +56,47 @@ public class JNodeLayout implements LayoutManager2 {
     private HashMap<Component, LayoutNode.LeafNode> byComponent = new HashMap<Component, LayoutNode.LeafNode>();
 
     private final LayoutNode root;
+    private Timer debugTimer = new Timer(500, new ActionListener() {
+
+	public void actionPerformed(ActionEvent e) {
+	    Container parent = root.getTarget();
+	    if (parent != null) {
+		Rectangle bounds = parent.getBounds();
+		Insets insets = parent.getInsets();
+
+		bounds.width -= insets.left + insets.right;
+		bounds.x = insets.left;
+
+		bounds.height -= insets.top + insets.bottom;
+		bounds.y = insets.top;
+
+		int hgap = getRoot().getHgap();
+		int vgap = getRoot().getVgap();
+
+		bounds.width -= hgap;
+		bounds.height -= vgap;
+
+		root.paintNode(parent.getGraphics(), bounds);
+	    }
+	    else {
+		System.out.println("No Target");
+		debugTimer.stop();
+	    }
+	}
+    });
 
     public JNodeLayout(LayoutNode root) {
 	this.root = root;
 	putNode(root);
+    }
+    
+    public void setDebug(boolean b) {
+	if(b) {
+	    debugTimer.restart();
+	}
+	else {
+	    debugTimer.stop();
+	}
     }
 
     /**
@@ -119,6 +160,27 @@ public class JNodeLayout implements LayoutManager2 {
 	    Logger.getGlobal().warning("LeafNode not found for " + comp);
 	}
     }
+    
+    public void setHgap(Component comp, int hgap) {
+	LayoutNode gl = byComponent.get(comp);
+	if(gl != null) {
+	    gl.setHgap(hgap);
+	}
+	else {
+	    Logger.getGlobal().warning("LeafNode not found for " + comp);
+	}
+    }
+    
+    public void setVgap(Component comp, int vgap) {
+	LayoutNode gl = byComponent.get(comp);
+	if(gl != null) {
+	    gl.setVgap(vgap);
+	}
+	else {
+	    Logger.getGlobal().warning("LeafNode not found for " + comp);
+	}
+    }
+
 
     /**
      * set vertical alignment for leaf node which contains specified component

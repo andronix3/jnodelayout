@@ -54,7 +54,7 @@ public class JNL_NestedDemo {
 	Logger.getGlobal().setLevel(Level.WARNING);
 
 	LayoutNode root = new LayoutNode.RectNode("root");
-	JNodeLayout layout = new JNodeLayout(root);
+	JNodeLayout layout = new JNodeLayout(target, root);
 	target.setLayout(layout);
 
 	root.setHgap(10);
@@ -77,6 +77,7 @@ public class JNL_NestedDemo {
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	frame.getContentPane().add(target);
 	frame.pack();
+	layout.setDebug(true);
 	frame.setVisible(true);
 	frame.setExtendedState(Frame.MAXIMIZED_BOTH);
     }

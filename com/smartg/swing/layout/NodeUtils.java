@@ -35,6 +35,8 @@ import java.awt.Container;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 
+import javax.swing.JLabel;
+
 import com.smartg.swing.layout.LayoutNode.GridNode;
 
 public class NodeUtils {
@@ -120,6 +122,32 @@ public class NodeUtils {
 	    Rectangle r = new Rectangle(x, y, w, 1);
 	    parent.add(comp, new NodeConstraints(gridName, r));
 	    x += w;
+	}
+
+	public void skip(int w) {
+	    if (!initDone) {
+		init();
+	    }
+	    if (x >= width || (x + w) > width) {
+		x = 0;
+		y++;
+	    }
+	    x += w;
+	}
+
+	public void skipToNextLine() {
+	    if (!initDone) {
+		init();
+	    }
+	    x = 0;
+	    y++;
+	}
+	
+	public void skipLine() {
+	    if(x != 0) {
+		skipToNextLine();
+	    }
+	    add(new JLabel(), width);
 	}
 
 	public void add(LayoutNode node, int w) {
