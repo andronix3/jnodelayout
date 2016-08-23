@@ -40,10 +40,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import com.smartg.swing.layout.GridHelper;
 import com.smartg.swing.layout.JNodeLayout;
 import com.smartg.swing.layout.LayoutNode;
 import com.smartg.swing.layout.NodeAlignment;
-import com.smartg.swing.layout.NodeUtils.GridHelper;
 
 public class JNL_Grid_Demo {
 
