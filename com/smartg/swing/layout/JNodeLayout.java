@@ -27,9 +27,9 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.smartg.swing.layout;
 
+import com.smartg.java.util.StackTraceUtil;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -49,354 +49,348 @@ import com.smartg.swing.layout.LayoutNode.LeafNode;
 
 /**
  * JNodeLayoutis a node-based LayoutManager.
- * 
+ *
  */
 public class JNodeLayout implements LayoutManager2 {
-	private static final boolean logStackTrace = false;
 
-	private HashMap<String, LayoutNode> map = new HashMap<String, LayoutNode>();
-	private HashMap<Component, LayoutNode.LeafNode> byComponent = new HashMap<Component, LayoutNode.LeafNode>();
+    private static final boolean logStackTrace = false;
 
-	private final LayoutNode root;
-	private Timer debugTimer = new Timer(500, new ActionListener() {
+    private HashMap<String, LayoutNode> map = new HashMap<String, LayoutNode>();
+    private HashMap<Component, LayoutNode.LeafNode> byComponent = new HashMap<Component, LayoutNode.LeafNode>();
 
-		public void actionPerformed(ActionEvent e) {
-			Container parent = root.getTarget();
-			if (parent != null) {
-				Rectangle bounds = parent.getBounds();
-				Insets insets = parent.getInsets();
+    private final LayoutNode root;
+    private Timer debugTimer = new Timer(500, new ActionListener() {
 
-				bounds.width -= insets.left + insets.right;
-				bounds.x = insets.left;
+        public void actionPerformed(ActionEvent e) {
+            Container parent = root.getTarget();
+            if (parent != null) {
+                Rectangle bounds = parent.getBounds();
+                Insets insets = parent.getInsets();
 
-				bounds.height -= insets.top + insets.bottom;
-				bounds.y = insets.top;
+                bounds.width -= insets.left + insets.right;
+                bounds.x = insets.left;
 
-				int hgap = getRoot().getHgap();
-				int vgap = getRoot().getVgap();
+                bounds.height -= insets.top + insets.bottom;
+                bounds.y = insets.top;
 
-				bounds.width -= hgap;
-				bounds.height -= vgap;
+                int hgap = getRoot().getHgap();
+                int vgap = getRoot().getVgap();
 
-				root.paintNode(parent.getGraphics(), bounds);
-			} else {
-				System.out.println("No Target");
-				debugTimer.stop();
-			}
-		}
-	});
+                bounds.width -= hgap;
+                bounds.height -= vgap;
 
-	public JNodeLayout(LayoutNode root) {
-		this.root = root;
-		putNode(root);
-	}
+                root.paintNode(parent.getGraphics(), bounds);
+            } else {
+                System.out.println("No Target");
+                debugTimer.stop();
+            }
+        }
+    });
 
-	public void setDebug(boolean b) {
-		if (b) {
-			debugTimer.restart();
-		} else {
-			debugTimer.stop();
-		}
-	}
+    public JNodeLayout(LayoutNode root) {
+        this.root = root;
+        putNode(root);
+    }
 
-	/**
-	 * If you use this constructor you may just add Components to layout nodes,
-	 * the Components will be added to target Container by LayoutManager, thus
-	 * making code shorter.
-	 * 
-	 * @param target
-	 * @param root
-	 */
-	public JNodeLayout(Container target, LayoutNode root) {
-		map.put("root", root);
-		this.root = root;
-		root.setTarget(target);
-	}
+    public void setDebug(boolean b) {
+        if (b) {
+            debugTimer.restart();
+        } else {
+            debugTimer.stop();
+        }
+    }
 
-	/**
-	 * Set horizontal alignment for node with given name
-	 * 
-	 * @param nodeName
-	 *            name of node
-	 * @param alignment
-	 */
-	public void setHorizontalAlignment(String nodeName, NodeAlignment alignment) {
-		LayoutNode gl = map.get(nodeName);
-		if (gl != null) {
-			gl.setHorizontalAlignment(alignment);
-		} else {
-			Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
-		}
-	}
+    /**
+     * If you use this constructor you may just add Components to layout nodes,
+     * the Components will be added to target Container by LayoutManager, thus
+     * making code shorter.
+     *
+     * @param target
+     * @param root
+     */
+    public JNodeLayout(Container target, LayoutNode root) {
+        map.put("root", root);
+        this.root = root;
+        root.setTarget(target);
+    }
 
-	/**
-	 * Set vertical alignment for node with given name
-	 * 
-	 * @param nodeName
-	 *            name of node
-	 * @param alignment
-	 */
-	public void setVerticalAlignment(String nodeName, NodeAlignment alignment) {
-		LayoutNode gl = map.get(nodeName);
-		if (gl != null) {
-			gl.setVerticalAlignment(alignment);
-		} else {
-			Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
-		}
-	}
+    /**
+     * Set horizontal alignment for node with given name
+     *
+     * @param nodeName name of node
+     * @param alignment
+     */
+    public void setHorizontalAlignment(String nodeName, NodeAlignment alignment) {
+        LayoutNode gl = map.get(nodeName);
+        if (gl != null) {
+            gl.setHorizontalAlignment(alignment);
+        } else {
+            Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+        }
+    }
 
-	/**
-	 * set horizontal alignment for leaf node which contains specified component
-	 * 
-	 * @param comp
-	 *            component
-	 * @param alignment
-	 */
-	public void setHorizontalAlignment(Component comp, NodeAlignment alignment) {
-		LayoutNode gl = byComponent.get(comp);
-		if (gl != null) {
-			gl.setHorizontalAlignment(alignment);
-		} else {
-			Logger.getGlobal().warning("LeafNode not found for " + comp);
-		}
-	}
+    /**
+     * Set vertical alignment for node with given name
+     *
+     * @param nodeName name of node
+     * @param alignment
+     */
+    public void setVerticalAlignment(String nodeName, NodeAlignment alignment) {
+        LayoutNode gl = map.get(nodeName);
+        if (gl != null) {
+            gl.setVerticalAlignment(alignment);
+        } else {
+            Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+        }
+    }
 
-	public void setHgap(Component comp, int hgap) {
-		LayoutNode gl = byComponent.get(comp);
-		if (gl != null) {
-			gl.setHgap(hgap);
-		} else {
-			Logger.getGlobal().warning("LeafNode not found for " + comp);
-		}
-	}
+    /**
+     * set horizontal alignment for leaf node which contains specified component
+     *
+     * @param comp component
+     * @param alignment
+     */
+    public void setHorizontalAlignment(Component comp, NodeAlignment alignment) {
+        LayoutNode gl = byComponent.get(comp);
+        if (gl != null) {
+            gl.setHorizontalAlignment(alignment);
+        } else {
+            Logger.getGlobal().warning("LeafNode not found for " + comp);
+        }
+    }
 
-	public void setVgap(Component comp, int vgap) {
-		LayoutNode gl = byComponent.get(comp);
-		if (gl != null) {
-			gl.setVgap(vgap);
-		} else {
-			Logger.getGlobal().warning("LeafNode not found for " + comp);
-		}
-	}
+    public void setHgap(Component comp, int hgap) {
+        LayoutNode gl = byComponent.get(comp);
+        if (gl != null) {
+            gl.setHgap(hgap);
+        } else {
+            Logger.getGlobal().warning("LeafNode not found for " + comp);
+        }
+    }
 
-	/**
-	 * set vertical alignment for leaf node which contains specified component
-	 * 
-	 * @param comp
-	 *            component
-	 * @param alignment
-	 */
-	public void setVerticalAlignment(Component comp, NodeAlignment alignment) {
-		LayoutNode gl = byComponent.get(comp);
-		if (gl != null) {
-			gl.setVerticalAlignment(alignment);
-		} else {
-			Logger.getGlobal().warning("LeafNode not found for " + comp);
-		}
-	}
+    public void setVgap(Component comp, int vgap) {
+        LayoutNode gl = byComponent.get(comp);
+        if (gl != null) {
+            gl.setVgap(vgap);
+        } else {
+            Logger.getGlobal().warning("LeafNode not found for " + comp);
+        }
+    }
 
-	public void addLayoutNode(LayoutNode layoutNode, String parentNodeName, Object constraints) {
-		putNode(layoutNode);
-		if (parentNodeName != null) {
-			LayoutNode gl = map.get(parentNodeName);
-			gl.add(layoutNode, constraints);
-			Container target = layoutNode.getTarget();
-			if (target != null) {
-				Iterator<Component> components = layoutNode.components();
-				while (components.hasNext()) {
-					Component c = components.next();
-					if(c.getParent() != target) {
-						target.add(c);
-					}
-				}
-			}
-		}
-	}
+    /**
+     * set vertical alignment for leaf node which contains specified component
+     *
+     * @param comp component
+     * @param alignment
+     */
+    public void setVerticalAlignment(Component comp, NodeAlignment alignment) {
+        LayoutNode gl = byComponent.get(comp);
+        if (gl != null) {
+            gl.setVerticalAlignment(alignment);
+        } else {
+            Logger.getGlobal().warning("LeafNode not found for " + comp);
+        }
+    }
 
-	/**
-	 * This method does nothing
-	 */
-	public void addLayoutComponent(String name, Component comp) {
-		Logger.getLogger(getClass().getName()).log(Level.WARNING, "Method not implementd");
-	}
+    public void addLayoutNode(LayoutNode layoutNode, String parentNodeName, Object constraints) {
+        putNode(layoutNode);
+        if (parentNodeName != null) {
+            LayoutNode gl = map.get(parentNodeName);
+            gl.add(layoutNode, constraints);
+            Container target = layoutNode.getTarget();
+            if (target != null) {
+                Iterator<Component> components = layoutNode.components();
+                while (components.hasNext()) {
+                    Component c = components.next();
+                    if (c.getParent() != target) {
+                        target.add(c);
+                    }
+                }
+            }
+        }
+    }
 
-	public void removeLayoutComponent(Component comp) {
-		LeafNode leaf = byComponent.remove(comp);
-		if (leaf != null) {
-			leaf.getParent().remove(leaf);
-		}
-	}
+    /**
+     * This method does nothing
+     */
+    public void addLayoutComponent(String name, Component comp) {
+        Logger.getLogger(getClass().getName()).log(Level.WARNING, "Method not implementd");
+    }
 
-	public LayoutNode getNode(String name) {
-		return map.get(name);
-	}
+    public void removeLayoutComponent(Component comp) {
+        LeafNode leaf = byComponent.remove(comp);
+        if (leaf != null) {
+            leaf.getParent().remove(leaf);
+        }
+    }
 
-	public Dimension preferredLayoutSize(Container parent) {
-		Insets insets = parent.getInsets();
-		Dimension preferredSize = root.preferredSize();
-		preferredSize.width += insets.left + insets.right;
-		preferredSize.height += insets.top + insets.bottom;
-		preferredSize.width += root.getHgap();
-		preferredSize.height += root.getVgap();
+    public LayoutNode getNode(String name) {
+        return map.get(name);
+    }
 
-		return preferredSize;
-	}
+    public Dimension preferredLayoutSize(Container parent) {
+        Insets insets = parent.getInsets();
+        Dimension preferredSize = root.preferredSize();
+        preferredSize.width += insets.left + insets.right;
+        preferredSize.height += insets.top + insets.bottom;
+        preferredSize.width += root.getHgap();
+        preferredSize.height += root.getVgap();
 
-	public Dimension minimumLayoutSize(Container parent) {
-		return preferredLayoutSize(parent);
-	}
+        return preferredSize;
+    }
 
-	public void setHgap(int hgap) {
-		root.setHgap(hgap);
-	}
+    public Dimension minimumLayoutSize(Container parent) {
+        return preferredLayoutSize(parent);
+    }
 
-	public void setVgap(int vgap) {
-		root.setVgap(vgap);
-	}
+    public void setHgap(int hgap) {
+        root.setHgap(hgap);
+    }
 
-	public int getVgap() {
-		return root.getVgap();
-	}
+    public void setVgap(int vgap) {
+        root.setVgap(vgap);
+    }
 
-	public int getHgap() {
-		return root.getHgap();
-	}
+    public int getVgap() {
+        return root.getVgap();
+    }
 
-	public void layoutContainer(Container parent) {
-		Rectangle bounds = parent.getBounds();
-		Insets insets = parent.getInsets();
+    public int getHgap() {
+        return root.getHgap();
+    }
 
-		bounds.width -= insets.left + insets.right;
-		bounds.x = insets.left;
+    public void layoutContainer(Container parent) {
+        Rectangle bounds = parent.getBounds();
+        Insets insets = parent.getInsets();
 
-		bounds.height -= insets.top + insets.bottom;
-		bounds.y = insets.top;
+        bounds.width -= insets.left + insets.right;
+        bounds.x = insets.left;
 
-		int hgap = getRoot().getHgap();
-		int vgap = getRoot().getVgap();
+        bounds.height -= insets.top + insets.bottom;
+        bounds.y = insets.top;
 
-		bounds.width -= hgap;
-		bounds.height -= vgap;
+        int hgap = getRoot().getHgap();
+        int vgap = getRoot().getVgap();
 
-		root.layout(bounds);
-	}
+        bounds.width -= hgap;
+        bounds.height -= vgap;
 
-	/**
-	 * @param constraints
-	 *            must be NodeConstraints. However constraints objects of wrong
-	 *            type or null-constraints will be gracefully ignored by
-	 *            JNodeLayout. Such components may be added direct to LayoutNode
-	 *            later.
-	 * @see NodeConstraints
-	 */
-	public void addLayoutComponent(Component comp, Object constraints) {
-		if (constraints == null || !(constraints instanceof NodeConstraints)) {
-			Throwable ex = new Exception().fillInStackTrace();
-			StackTraceElement[] stackTrace = ex.getStackTrace();
-			// don't report adding Components without constraints from LeafNode
-			if (stackTrace[3].getClassName().endsWith("LayoutNode$LeafNode")) {
-				return;
-			}
-			String s = "";
-			if (logStackTrace) {
-				StringBuilder sb = new StringBuilder();
-				for (StackTraceElement elem : stackTrace) {
-					sb.append("\n");
-					sb.append(elem.getClassName());
-					sb.append(".");
-					sb.append(elem.getMethodName());
-					sb.append(":");
-					sb.append(elem.getLineNumber());
-				}
-				s = sb.toString();
-			}
-			Logger.getLogger(getClass().getName()).log(Level.WARNING,
-					"Constraints are null or wrong type. Stack trace: \n" + s);
+        root.layout(bounds);
+    }
 
-			return;
-		}
-		NodeConstraints constr = (NodeConstraints) constraints;
-		LayoutNode node = map.get(constr.getName());
-		if (node == null) {
-			node = root.findNode(constr.getName());
-			if (node != null) {
-				map.put(constr.getName(), node);
-			}
-		}
-		if (node != null) {
-			LeafNode leaf = node.addLeafNode(comp, constr.getConstraints());
-			byComponent.put(comp, leaf);
-		} else {
-			Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Node not found: " + constr.getName(),
-					new NullPointerException());
-		}
-	}
+    /**
+     * @param constraints must be NodeConstraints. However constraints objects
+     * of wrong type or null-constraints will be gracefully ignored by
+     * JNodeLayout. Such components may be added direct to LayoutNode later.
+     * @see NodeConstraints
+     */
+    public void addLayoutComponent(Component comp, Object constraints) {
+        if (constraints == null || !(constraints instanceof NodeConstraints)) {
+            Throwable ex = new Exception().fillInStackTrace();
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            // don't report adding Components without constraints from LeafNode
+            if (stackTrace[3].getClassName().endsWith("LayoutNode$LeafNode")) {
+                return;
+            }
+            String s = "";
+            if (logStackTrace) {
+                StringBuilder sb = new StringBuilder();
+                for (StackTraceElement elem : stackTrace) {
+                    sb.append("\n");
+                    sb.append(elem.getClassName());
+                    sb.append(".");
+                    sb.append(elem.getMethodName());
+                    sb.append(":");
+                    sb.append(elem.getLineNumber());
+                }
+                s = sb.toString();
+            }
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                    "Constraints are null or wrong type. Stack trace: \n" + s);
 
-	public LayoutNode getRoot() {
-		return root;
-	}
+            return;
+        }
+        NodeConstraints constr = (NodeConstraints) constraints;
+        LayoutNode node = map.get(constr.getName());
+        if (node == null) {
+            node = root.findNode(constr.getName());
+            if (node != null) {
+                map.put(constr.getName(), node);
+            }
+        }
+        if (node != null) {
+            LeafNode leaf = node.addLeafNode(comp, constr.getConstraints());
+            byComponent.put(comp, leaf);
+        } else {
+            StackTraceUtil.severe(new NullPointerException("Node not found: " + constr.getName()));
+        }
+    }
 
-	/**
-	 * Register nodes which was added direct to LayoutNode.
-	 */
-	public void syncNodes() {
-		syncNode(this.root);
-	}
+    public LayoutNode getRoot() {
+        return root;
+    }
 
-	private void syncNode(LayoutNode parent) {
-		for (LayoutNode child : parent) {
-			if (!child.isLeaf()) {
-				putNode(child);
-				syncNode(child);
-			} else {
-				LeafNode leafNode = (LeafNode) child;
-				byComponent.put(leafNode.getComponent(), leafNode);
-			}
-		}
-	}
+    /**
+     * Register nodes which was added direct to LayoutNode.
+     */
+    public void syncNodes() {
+        syncNode(this.root);
+    }
 
-	private void putNode(LayoutNode node) {
-		LayoutNode oldNode = map.get(node.getName());
-		if (oldNode != null) {
-			Logger.getGlobal().log(Level.WARNING,
-					"Warning: node with key \"" + node.getName() + "\" already exists " + oldNode.hashCode());
-		}
-		map.put(node.getName(), node);
-	}
+    private void syncNode(LayoutNode parent) {
+        for (LayoutNode child : parent) {
+            if (!child.isLeaf()) {
+                putNode(child);
+                syncNode(child);
+            } else {
+                LeafNode leafNode = (LeafNode) child;
+                byComponent.put(leafNode.getComponent(), leafNode);
+            }
+        }
+    }
 
-	/**
-	 * For debugging purpose: check if each node has unique name.
-	 */
-	public void verify() {
-		verifyNode(root);
-	}
+    private void putNode(LayoutNode node) {
+        LayoutNode oldNode = map.get(node.getName());
+        if (oldNode != null) {
+            Logger.getGlobal().log(Level.WARNING,
+                    "Warning: node with key \"" + node.getName() + "\" already exists " + oldNode.hashCode());
+        }
+        map.put(node.getName(), node);
+    }
 
-	private void verifyNode(LayoutNode parent) {
-		for (LayoutNode child : parent) {
-			if (!child.isLeaf()) {
-				String name = child.getName();
-				if (map.get(name) != child) {
-					throw new RuntimeException("Verify failed: node " + child.getName() + " " + child
-							+ "in not registered or uses same key with another node");
-				}
-				verifyNode(child);
-			}
-		}
-	}
+    /**
+     * For debugging purpose: check if each node has unique name.
+     */
+    public void verify() {
+        verifyNode(root);
+    }
 
-	public Dimension maximumLayoutSize(Container target) {
-		return root.preferredSize();
-	}
+    private void verifyNode(LayoutNode parent) {
+        for (LayoutNode child : parent) {
+            if (!child.isLeaf()) {
+                String name = child.getName();
+                if (map.get(name) != child) {
+                    throw new RuntimeException("Verify failed: node " + child.getName() + " " + child
+                            + "in not registered or uses same key with another node");
+                }
+                verifyNode(child);
+            }
+        }
+    }
 
-	public float getLayoutAlignmentX(Container target) {
-		return 0;
-	}
+    public Dimension maximumLayoutSize(Container target) {
+        return root.preferredSize();
+    }
 
-	public float getLayoutAlignmentY(Container target) {
-		return 0;
-	}
+    public float getLayoutAlignmentX(Container target) {
+        return 0;
+    }
 
-	public void invalidateLayout(Container target) {
+    public float getLayoutAlignmentY(Container target) {
+        return 0;
+    }
 
-	}
+    public void invalidateLayout(Container target) {
+
+    }
 }
