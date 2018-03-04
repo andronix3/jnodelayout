@@ -72,7 +72,6 @@ public class DialogPanel extends GridPanel {
                 currentDialog.setVisible(false);
             }
         });
-
     }
 
     public final void addUserButton(AbstractButton b) {
