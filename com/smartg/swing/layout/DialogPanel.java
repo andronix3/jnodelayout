@@ -64,7 +64,7 @@ public class DialogPanel extends GridPanel {
 		buttonBox.setBorder(new EmptyBorder(0, 10, 20, 0));
 
 		closeButton.addActionListener(e -> {
-			if (currentDialog != null && closePredicate.test(this)) {
+			if (currentDialog != null && (closePredicate == null || closePredicate.test(this))) {
 				currentDialog.setVisible(false);
 			}
 		});
