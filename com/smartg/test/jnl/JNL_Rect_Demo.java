@@ -45,7 +45,7 @@ import com.smartg.swing.layout.NodeConstraints;
 
 public class JNL_Rect_Demo {
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
 	String rootName = "root";
 
@@ -53,7 +53,7 @@ public class JNL_Rect_Demo {
 	JNodeLayout layout = new JNodeLayout(target, new LayoutNode.RectNode(rootName));
 
 	target.setLayout(layout);
-
+	
 	LayoutNode bottom = new LayoutNode.HorizontalNode("bottom");
 	bottom.setVerticalAlignment(NodeAlignment.TOP);
 	layout.addLayoutNode(bottom, rootName, new Rectangle2D.Double(0.2, 0.8, 0.6, 0.2));
@@ -61,6 +61,27 @@ public class JNL_Rect_Demo {
 	LayoutNode top = new LayoutNode.HorizontalNode("top");
 	top.setVerticalAlignment(NodeAlignment.BOTTOM);
 	layout.addLayoutNode(top, rootName, new Rectangle2D.Double(0.2, 0.0, 0.6, 0.2));
+	
+	LayoutNode topLeft = new LayoutNode.HorizontalNode("tplf");
+	layout.addLayoutNode(topLeft, rootName, new Rectangle2D.Double(0.1, 0.0, 0.1, 0.2));
+	topLeft.setVerticalAlignment(NodeAlignment.BOTTOM);
+	topLeft.setHorizontalAlignment(NodeAlignment.RIGHT);
+	
+	LayoutNode topRight = new LayoutNode.HorizontalNode("tprit");
+	layout.addLayoutNode(topRight, rootName, new Rectangle2D.Double(0.8, 0.0, 0.2, 0.2));
+	topRight.setVerticalAlignment(NodeAlignment.BOTTOM);
+	topRight.setHorizontalAlignment(NodeAlignment.LEFT);
+
+	
+	LayoutNode bottomLeft = new LayoutNode.HorizontalNode("btlf");
+	layout.addLayoutNode(bottomLeft, rootName, new Rectangle2D.Double(0.1, 0.8, 0.1, 0.2));
+	bottomLeft.setVerticalAlignment(NodeAlignment.TOP);
+	bottomLeft.setHorizontalAlignment(NodeAlignment.RIGHT);
+	
+	LayoutNode bottomRight = new LayoutNode.HorizontalNode("btrit");
+	layout.addLayoutNode(bottomRight, rootName, new Rectangle2D.Double(0.8, 0.8, 0.1, 0.2));
+	bottomRight.setVerticalAlignment(NodeAlignment.TOP);
+	bottomRight.setHorizontalAlignment(NodeAlignment.LEFT);
 
 	LayoutNode right = new LayoutNode.VerticalNode("right");
 	right.setHorizontalAlignment(NodeAlignment.LEFT);
@@ -72,7 +93,11 @@ public class JNL_Rect_Demo {
 
 	LayoutNode center = new LayoutNode.RectNode("center");
 	layout.addLayoutNode(center, rootName, new Rectangle2D.Double(0.2, 0.2, 0.6, 0.6));
-
+	
+	createAndPutComponents(target, "TPLF", 1);
+	createAndPutComponents(target, "TPRIT", 1);
+	createAndPutComponents(target, "BTRIT", 1);
+	createAndPutComponents(target, "BTLF", 1);
 	createAndPutComponents(target, "RIGHT", 5);
 	createAndPutComponents(target, "TOP", 5);
 	createAndPutComponents(target, "LEFT", 5);
@@ -87,20 +112,20 @@ public class JNL_Rect_Demo {
 	frame.setVisible(true);
     }
 
-    public static void createAndPutComponents(JPanel target, String name, int count) {
-	ArrayList<JComponent> rightButtons = createList(name, count);
-	NodeConstraints constraints = new NodeConstraints(name.toLowerCase());
-	for (JComponent c : rightButtons) {
-	    target.add(c, constraints);
+	public static void createAndPutComponents(JPanel target, String name, int count) {
+		ArrayList<JComponent> buttons = createList(name, count);
+		NodeConstraints constraints = new NodeConstraints(name.toLowerCase());
+		for (JComponent c : buttons) {
+			target.add(c, constraints);
+		}
 	}
-    }
 
-    public static ArrayList<JComponent> createList(String name, int count) {
-	ArrayList<JComponent> topList = new ArrayList<JComponent>();
-	for (int i = 0; i < count; i++) {
-	    topList.add(new JButton(name + " " + i));
+	public static ArrayList<JComponent> createList(String name, int count) {
+		ArrayList<JComponent> topList = new ArrayList<JComponent>();
+		for (int i = 0; i < count; i++) {
+			topList.add(new JButton(name + " " + i));
+		}
+		return topList;
 	}
-	return topList;
-    }
 
 }

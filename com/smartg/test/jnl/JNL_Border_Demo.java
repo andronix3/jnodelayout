@@ -79,7 +79,7 @@ public class JNL_Border_Demo {
 
     public static void createTextField(JNodeLayout slm, JPanel target, String rootName) {
 	JComponent text = createTextField("SampleText...");
-	target.add(text, new NodeConstraints(rootName, new Rectangle(1, 0, 5, 1)));
+	//target.add(text, new NodeConstraints(rootName, new Rectangle(1, 0, 5, 1)));
 	slm.setHorizontalAlignment(text, NodeAlignment.STRETCHED);
 	slm.setVerticalAlignment(text, NodeAlignment.BOTTOM);
     }
