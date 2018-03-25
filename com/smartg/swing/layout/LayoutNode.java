@@ -508,6 +508,21 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		}
 
 		@Override
+		public void paintBorder(Graphics g, Rectangle dest) {
+			super.paintBorder(g, dest);
+			
+			Xym xym = computeXym(dest);
+
+			for (LayoutNode c : this) {
+				Dimension d = c.preferredSize();
+				double height = d.height * xym.m;
+				Rectangle r = xym.create(height);
+				c.paintBorder(g, r);
+				xym.y += height;
+			}
+		}
+
+		@Override
 		public void paintNode(Graphics g, Rectangle dest) {
 			super.paintNode(g, dest);
 
@@ -640,8 +655,43 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		}
 
 		@Override
+		public void paintBorder(Graphics g, Rectangle dest) {
+			super.paintBorder(g, dest);
+			
+			Dimension ps = preferredSize();
+			int height;
+			if (verticalAlignment == NodeAlignment.STRETCHED) {
+				height = dest.height;
+			} else {
+				height = Math.min(dest.height, ps.height);
+			}
+
+			double m = 1;
+
+			if (dest.width < ps.width || horizontalAlignment == NodeAlignment.STRETCHED) {
+				m = dest.getWidth() / ps.getWidth();
+			}
+
+			int dx = adjustX(dest.width, ps.width);
+			int dy = adjustY(dest.height, ps.height);
+
+			int x = dest.x + dx;
+			int y = dest.y + dy;
+
+			for (LayoutNode c : this) {
+				Dimension d = c.preferredSize();
+				double width = d.width * m;
+				Rectangle bounds = new Rectangle();
+				bounds.setRect(x, y, width, height);
+				c.paintBorder(g, bounds);
+				x += width;
+			}
+		}
+
+		@Override
 		public void paintNode(Graphics g, Rectangle dest) {
 			super.paintNode(g, dest);
+			
 			Dimension ps = preferredSize();
 			int height;
 			if (verticalAlignment == NodeAlignment.STRETCHED) {
@@ -753,6 +803,26 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 				Rectangle bounds = new Rectangle(dest.x + x, dest.y + y, w, h);
 				n.layout(bounds);
+			}
+		}
+
+		@Override
+		public void paintBorder(Graphics g, Rectangle dest) {
+			super.paintBorder(g, dest);
+			
+			for (LayoutNode n : this) {
+				Rectangle2D r = map.get(n);
+				int width = dest.width;
+				int height = dest.height;
+
+				int x = (int) (width * r.getX());
+				int y = (int) (height * r.getY());
+				int w = (int) (width * r.getWidth());
+				int h = (int) (height * r.getHeight());
+
+				Rectangle bounds = new Rectangle(dest.x + x, dest.y + y, w, h);
+
+				n.paintBorder(g, bounds);
 			}
 		}
 
@@ -901,6 +971,40 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
 				gl.layout(bounds);
 			}
+		}
+		
+		
+
+		@Override
+		public void paintBorder(Graphics g, Rectangle dest) {
+			super.paintBorder(g, dest);
+			
+			Dimension preferredSize = preferredSize();
+
+			double mx = 1;
+			if (horizontalAlignment == NodeAlignment.STRETCHED) {
+				mx = dest.getWidth() / preferredSize.getWidth();
+			}
+			double my = 1;
+			if (verticalAlignment == NodeAlignment.STRETCHED) {
+				my = dest.getHeight() / preferredSize.getHeight();
+			}
+
+			int dx = adjustX(dest.width - dest.x, preferredSize.width);
+			int dy = adjustY(dest.height - dest.y, preferredSize.height);
+
+			for (LayoutNode gl : this) {
+				Rectangle r = map.get(gl);
+				int x = getXOffset(0, r.x) + dx;
+				double width = getXOffset(r.x, r.x + r.width);
+				int y = getYOffset(0, r.y) + dy;
+				double height = getYOffset(r.y, r.y + r.height);
+
+				Rectangle bounds = new Rectangle();
+				bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
+				gl.paintBorder(g, bounds);
+			}
+
 		}
 
 		@Override
