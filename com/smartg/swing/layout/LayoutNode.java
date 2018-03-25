@@ -36,6 +36,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -79,6 +80,15 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 	public Border getBorder() {
 		return border;
+	}
+
+	public Insets getNodeInsets() {
+		Border b = getBorder();
+		Container t = getTarget();
+		if (b != null && t != null) {
+			return b.getBorderInsets(t);
+		}
+		return new Insets(0, 0, 0, 0);
 	}
 
 	public void setBorder(Border border) {
@@ -139,7 +149,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 	public void paintBorder(Graphics g, Rectangle r) {
 		if (border != null) {
-			border.paintBorder(target, g, r.x, r.y, r.width, r.height);
+			border.paintBorder(getTarget(), g, r.x, r.y, r.width, r.height);
 		}
 	}
 
@@ -370,6 +380,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				preferredSize.width += hgap;
 				preferredSize.height += vgap;
 
+				Insets insets = getNodeInsets();
+				preferredSize.width += insets.left + insets.right;
+				preferredSize.height += insets.top + insets.bottom;
+
 				return preferredSize;
 			}
 			return new Dimension();
@@ -396,6 +410,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				getParent().setInvalidNode(this);
 				return;
 			}
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			int hgap = getHgap();
 			int vgap = getVgap();
@@ -484,6 +505,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				height += ps.height;
 				width = Math.max(width, ps.width);
 			}
+			Insets insets = getNodeInsets();
+			width += insets.left + insets.right;
+			height += insets.top + insets.bottom;
+
 			return new Dimension(width, height);
 		}
 
@@ -503,6 +528,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void layout(Rectangle dest) {
 			removeInvalidNodes();
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			Xym xym = computeXym(dest);
 
@@ -576,6 +608,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		}
 
 		static class Xym {
+
 			float m;
 			int x, y, width;
 
@@ -612,6 +645,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				width += ps.width;
 				height = Math.max(height, ps.height);
 			}
+			Insets insets = getNodeInsets();
+			width += insets.left + insets.right;
+			height += insets.top + insets.bottom;
+
 			return new Dimension(width, height);
 		}
 
@@ -631,6 +668,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void layout(Rectangle dest) {
 			removeInvalidNodes();
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			Dimension ps = preferredSize();
 			int height;
@@ -766,6 +810,10 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				width = Math.max(w, width);
 				height = Math.max(h, height);
 			}
+			Insets insets = getNodeInsets();
+			width += insets.left + insets.right;
+			height += insets.top + insets.bottom;
+
 			Dimension res = new Dimension();
 			res.setSize(width, height);
 			return res;
@@ -798,6 +846,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void layout(Rectangle dest) {
 			removeInvalidNodes();
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			for (LayoutNode n : this) {
 				Rectangle2D r = map.get(n);
@@ -894,6 +949,9 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				Dimension cs = gridModel.getCellSize(0, y);
 				height += cs.height;
 			}
+			Insets insets = getNodeInsets();
+			width += insets.left + insets.right;
+			height += insets.top + insets.bottom;
 
 			Dimension d = new Dimension(width, height);
 			return d;
@@ -967,6 +1025,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 			int dx = adjustX(dest.width - dest.x, preferredSize.width);
 			int dy = adjustY(dest.height - dest.y, preferredSize.height);
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
@@ -1052,6 +1117,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 		public int getXOffset(int from, int to) {
 			int mx = 0;
+
 			for (int x = from; x < to; x++) {
 				mx += gridModel.getCellSize(x, 0).width;
 			}
