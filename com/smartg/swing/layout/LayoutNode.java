@@ -77,6 +77,14 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		add(layout, null);
 	}
 
+	public Border getBorder() {
+		return border;
+	}
+
+	public void setBorder(Border border) {
+		this.border = border;
+	}
+
 	public abstract void add(LayoutNode layout, Object constraints);
 
 	public abstract int getCount();
@@ -510,7 +518,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void paintBorder(Graphics g, Rectangle dest) {
 			super.paintBorder(g, dest);
-			
+
 			Xym xym = computeXym(dest);
 
 			for (LayoutNode c : this) {
@@ -657,7 +665,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void paintBorder(Graphics g, Rectangle dest) {
 			super.paintBorder(g, dest);
-			
+
 			Dimension ps = preferredSize();
 			int height;
 			if (verticalAlignment == NodeAlignment.STRETCHED) {
@@ -691,7 +699,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void paintNode(Graphics g, Rectangle dest) {
 			super.paintNode(g, dest);
-			
+
 			Dimension ps = preferredSize();
 			int height;
 			if (verticalAlignment == NodeAlignment.STRETCHED) {
@@ -809,7 +817,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		@Override
 		public void paintBorder(Graphics g, Rectangle dest) {
 			super.paintBorder(g, dest);
-			
+
 			for (LayoutNode n : this) {
 				Rectangle2D r = map.get(n);
 				int width = dest.width;
@@ -972,13 +980,11 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				gl.layout(bounds);
 			}
 		}
-		
-		
 
 		@Override
 		public void paintBorder(Graphics g, Rectangle dest) {
 			super.paintBorder(g, dest);
-			
+
 			Dimension preferredSize = preferredSize();
 
 			double mx = 1;
