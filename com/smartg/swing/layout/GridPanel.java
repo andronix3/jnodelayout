@@ -92,12 +92,14 @@ public class GridPanel extends JPanel {
 		helper.skipToNextLine();
 	}
 
-	public final void add(JComponent c) {
+	public final <T extends JComponent> T add(T c) {
 		helper.add(c);
+		return c;
 	}
 
-	public final void add(JComponent c, int width) {
+	public final <T extends JComponent> T add(T c, int width) {
 		helper.add(c, width);
+		return c;
 	}
 
 	public JComponent getComponent(String name) {

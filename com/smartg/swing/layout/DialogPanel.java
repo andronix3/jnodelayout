@@ -10,8 +10,8 @@ import java.awt.event.KeyEvent;
 import java.util.function.Predicate;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
-import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -39,9 +39,12 @@ public class DialogPanel extends GridPanel {
 	private final JButton closeButton = new JButton("Close");
 	private final JButton okayButton = new JButton("Okay");
 
-	private final GridPanel buttonBox = new GridPanel(10);
+	private final GridPanel buttonBox = new GridPanel(20);
 	private final GridPanel systemButtonBox = new GridPanel(20);
 	private final GridPanel userButtonBox = new GridPanel(20);
+	private final GridPanel componentBox1 = new GridPanel(20);
+	private final GridPanel componentBox2 = new GridPanel(20);
+	private final GridPanel componentBox3 = new GridPanel(20);
 
 	private boolean canceled = true;
 	private boolean closeDialogOnOkayClick = true;
@@ -58,17 +61,20 @@ public class DialogPanel extends GridPanel {
 	public DialogPanel(int gridWidth) {
 		super(gridWidth);
 
+		userButtonBox.setHorizontalAlignment(NodeAlignment.LEFT);
+		userButtonBox.setVerticalAlignment(NodeAlignment.BOTTOM);
+
 		buttonBox.setVerticalAlignment(NodeAlignment.BOTTOM);
 		buttonBox.setHorizontalAlignment(NodeAlignment.STRETCHED);
 
-		userButtonBox.setHorizontalAlignment(NodeAlignment.LEFT);
-		userButtonBox.setVerticalAlignment(NodeAlignment.CENTER);
+		buttonBox.add(componentBox1, 4);
+		buttonBox.add(userButtonBox, 4);
+		buttonBox.add(componentBox2, 4);
+		buttonBox.add(systemButtonBox, 4);
+		buttonBox.add(componentBox3, 4);
 
 		systemButtonBox.setHorizontalAlignment(NodeAlignment.RIGHT);
 		systemButtonBox.setVerticalAlignment(NodeAlignment.BOTTOM);
-
-		buttonBox.add(userButtonBox, 6);
-		buttonBox.add(systemButtonBox, 4);
 
 		systemButtonBox.add(closeButton, 1);
 		systemButtonBox.add(okayButton, 1);
@@ -121,7 +127,19 @@ public class DialogPanel extends GridPanel {
 		this.closePredicate = closePredicate;
 	}
 
-	public final JComponent addUserButton(JComponent b) {
+	public void addUserComponentLeft(JComponent c) {
+		componentBox1.add(c, 1);
+	}
+
+	public void addUserComponentMiddle(JComponent c) {
+		componentBox2.add(c, 1);
+	}
+
+	public void addUserComponentRight(Component c) {
+		componentBox3.add(c, 1);
+	}
+
+	public final AbstractButton addUserButton(AbstractButton b) {
 		userButtonBox.add(b, 1);
 		return b;
 	}
