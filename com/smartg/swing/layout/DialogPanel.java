@@ -19,6 +19,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
@@ -38,7 +39,6 @@ public class DialogPanel extends GridPanel {
 
 	private static final long serialVersionUID = -6770092063928679808L;
 
-	private JDialog currentDialog;
 	private final JButton closeButton = new JButton("Close");
 	private final JButton okayButton = new JButton("Okay");
 	private final Box buttonBox = Box.createHorizontalBox();
@@ -67,14 +67,20 @@ public class DialogPanel extends GridPanel {
 		buttonBox.setBorder(new EmptyBorder(0, 10, 20, 0));
 
 		closeButton.addActionListener(e -> {
-			if (currentDialog != null && (closePredicate == null || closePredicate.test(this))) {
-				currentDialog.setVisible(false);
+			if (closePredicate == null || closePredicate.test(this)) {
+				Window ancestor = SwingUtilities.getWindowAncestor(closeButton);
+				if(ancestor != null) {
+					ancestor.setVisible(false);
+				}
 			}
 		});
 		okayButton.addActionListener(e -> {
 			canceled = false;
-			if (closeDialogOnOkayClick && currentDialog != null) {
-				currentDialog.setVisible(false);
+			if (closeDialogOnOkayClick) {
+				Window ancestor = SwingUtilities.getWindowAncestor(okayButton);
+				if(ancestor != null) {
+					ancestor.setVisible(false);
+				}
 			}
 		});
 	}
@@ -136,12 +142,50 @@ public class DialogPanel extends GridPanel {
 		this.title = title;
 	}
 
-	public void showPanelInDialog(Component c) {
-		showPanelInDialog(SwingUtilities.getWindowAncestor(c));
+	public void showInDialog(Component c) {
+		showInDialog(SwingUtilities.getWindowAncestor(c));
 	}
 
-	public void showPanelInDialog(Window owner) {
+	public void showInDialog(Window owner) {
 		JDialog dialog = new JDialog(owner, Dialog.ModalityType.APPLICATION_MODAL);
+		if (title != null) {
+			dialog.setTitle(title);
+		}
+		final Container contentPane = dialog.getContentPane();
+		final LayoutNode.VerticalNode root = new LayoutNode.VerticalNode("root");
+		root.setHorizontalAlignment(NodeAlignment.STRETCHED);
+		root.setVerticalAlignment(NodeAlignment.CENTER);
+		contentPane.setLayout(new JNodeLayout(contentPane, root));
+		contentPane.add(this, new NodeConstraints("root"));
+		contentPane.add(buttonBox, new NodeConstraints("root"));
+		
+		JRootPane rootPane = dialog.getRootPane();
+		if (getOkayButton().isDefaultCapable()) {
+			rootPane.setDefaultButton(getOkayButton());
+		}
+		
+		InputMap inputMap = rootPane.getInputMap(JButton.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		ActionMap actionMap = rootPane.getActionMap();
+		
+		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+		String name = "CloseOnEscape";
+		inputMap.put(ks, name);
+		actionMap.put(name, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+		
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				closeButton.doClick();
+			}
+		});
+		
+		dialog.pack();
+		dialog.setLocationRelativeTo(owner);
+		dialog.setVisible(true);
+	}
+	
+	public void showInFrame() {
+		JFrame dialog = new JFrame();
 		if (title != null) {
 			dialog.setTitle(title);
 		}
@@ -174,8 +218,6 @@ public class DialogPanel extends GridPanel {
 		});
 
 		dialog.pack();
-		dialog.setLocationRelativeTo(owner);
-		this.currentDialog = dialog;
 		dialog.setVisible(true);
 	}
 
@@ -210,12 +252,5 @@ public class DialogPanel extends GridPanel {
 		menu.add(contentPane);
 
 		menu.show(c, 0, -contentPane.getPreferredSize().height);
-	}
-
-	/**
-	 * @return the currentDialog
-	 */
-	public JDialog getCurrentDialog() {
-		return currentDialog;
 	}
 }

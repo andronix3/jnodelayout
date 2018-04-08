@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -35,21 +33,21 @@ public class GridPanel extends JPanel {
 	@Override
 	protected void paintBorder(Graphics g) {
 		super.paintBorder(g);
-		
+
 		Insets insets = getInsets();
 		Rectangle bounds = getBounds();
 		bounds.x = insets.left;
 		bounds.y = insets.left;
 		bounds.width -= insets.left + insets.right;
 		bounds.height -= insets.top + insets.bottom;
-		
-        int hgap = layout.getHgap();
-        int vgap = layout.getVgap();
 
-        bounds.width -= hgap;
-        bounds.height -= vgap;
-        
-		layout.getRoot().paintBorder(g, bounds);		
+		int hgap = layout.getHgap();
+		int vgap = layout.getVgap();
+
+		bounds.width -= hgap;
+		bounds.height -= vgap;
+
+		layout.getRoot().paintBorder(g, bounds);
 	}
 
 	@Override
