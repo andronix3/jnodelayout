@@ -7,12 +7,9 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.InputMap;
@@ -41,13 +38,14 @@ public class DialogPanel extends GridPanel {
 
 	private final JButton closeButton = new JButton("Close");
 	private final JButton okayButton = new JButton("Okay");
-	private final Box buttonBox = Box.createHorizontalBox();
-	private final Box userButtonBox = Box.createHorizontalBox();
+
+	private final GridPanel buttonBox = new GridPanel(10);
+	private final GridPanel systemButtonBox = new GridPanel(20);
+	private final GridPanel userButtonBox = new GridPanel(20);
+
 	private boolean canceled = true;
 	private boolean closeDialogOnOkayClick = true;
-	// After each user Button we add a small strut, strutMap is used to remove
-	// proper strut, if we remove Button
-	private final Map<AbstractButton, Component> strutMap = new HashMap<>();
+
 	private String title;
 	private Predicate<DialogPanel> closePredicate;
 
@@ -59,12 +57,21 @@ public class DialogPanel extends GridPanel {
 
 	public DialogPanel(int gridWidth) {
 		super(gridWidth);
-		buttonBox.add(userButtonBox);
-		buttonBox.add(Box.createHorizontalGlue());
-		buttonBox.add(closeButton);
-		buttonBox.add(Box.createHorizontalStrut(10));
-		buttonBox.add(okayButton);
-		buttonBox.add(Box.createHorizontalStrut(20));
+
+		buttonBox.setVerticalAlignment(NodeAlignment.BOTTOM);
+		buttonBox.setHorizontalAlignment(NodeAlignment.STRETCHED);
+
+		userButtonBox.setHorizontalAlignment(NodeAlignment.LEFT);
+		userButtonBox.setVerticalAlignment(NodeAlignment.CENTER);
+
+		systemButtonBox.setHorizontalAlignment(NodeAlignment.RIGHT);
+		systemButtonBox.setVerticalAlignment(NodeAlignment.BOTTOM);
+
+		buttonBox.add(userButtonBox, 6);
+		buttonBox.add(systemButtonBox, 4);
+
+		systemButtonBox.add(closeButton, 1);
+		systemButtonBox.add(okayButton, 1);
 
 		buttonBox.setBorder(new EmptyBorder(0, 10, 20, 0));
 
@@ -114,24 +121,17 @@ public class DialogPanel extends GridPanel {
 		this.closePredicate = closePredicate;
 	}
 
-	public final AbstractButton addUserButton(AbstractButton b) {
-		userButtonBox.add(b);
-		Component strut = Box.createHorizontalStrut(10);
-		userButtonBox.add(strut);
-		strutMap.put(b, strut);
+	public final JComponent addUserButton(JComponent b) {
+		userButtonBox.add(b, 1);
 		return b;
 	}
 
-	protected Box getButtonBox() {
+	protected JComponent getButtonBox() {
 		return buttonBox;
 	}
 
-	public AbstractButton removeUserButton(AbstractButton b) {
+	public JComponent removeUserButton(JComponent b) {
 		userButtonBox.remove(b);
-		Component strut = strutMap.remove(b);
-		if (strut != null) {
-			userButtonBox.remove(strut);
-		}
 		return b;
 	}
 

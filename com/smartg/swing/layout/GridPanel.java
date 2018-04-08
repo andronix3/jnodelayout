@@ -28,6 +28,12 @@ public class GridPanel extends JPanel {
 	public GridPanel(int gridWidth) {
 		setLayout(layout);
 		this.helper = new GridHelper(this, "root", gridWidth);
+
+		setHgap(10);
+		setVgap(10);
+
+		setHorizontalAlignment(NodeAlignment.CENTER);
+		setVerticalAlignment(NodeAlignment.CENTER);
 	}
 
 	@Override
