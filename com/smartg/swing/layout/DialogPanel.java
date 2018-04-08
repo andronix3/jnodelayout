@@ -51,6 +51,8 @@ public class DialogPanel extends GridPanel {
 	private String title;
 	private Predicate<DialogPanel> closePredicate;
 
+	private int closeOperation = JFrame.HIDE_ON_CLOSE;
+
 	public DialogPanel() {
 		this(10);
 	}
@@ -68,21 +70,40 @@ public class DialogPanel extends GridPanel {
 
 		closeButton.addActionListener(e -> {
 			if (closePredicate == null || closePredicate.test(this)) {
-				Window ancestor = SwingUtilities.getWindowAncestor(closeButton);
-				if(ancestor != null) {
-					ancestor.setVisible(false);
-				}
+				closeDialog();
 			}
 		});
 		okayButton.addActionListener(e -> {
 			canceled = false;
 			if (closeDialogOnOkayClick) {
-				Window ancestor = SwingUtilities.getWindowAncestor(okayButton);
-				if(ancestor != null) {
-					ancestor.setVisible(false);
-				}
+				closeDialog();
 			}
 		});
+	}
+
+	private void closeDialog() {
+		Window ancestor = SwingUtilities.getWindowAncestor(this);
+		if (ancestor != null) {
+			switch (closeOperation) {
+			case JFrame.EXIT_ON_CLOSE:
+				System.exit(0);
+				break;
+			case JFrame.DISPOSE_ON_CLOSE:
+				ancestor.dispose();
+				break;
+			case JFrame.HIDE_ON_CLOSE:
+				ancestor.setVisible(false);
+				break;
+			}
+		}
+	}
+
+	public int getCloseOperation() {
+		return closeOperation;
+	}
+
+	public void setCloseOperation(int closeOperation) {
+		this.closeOperation = closeOperation;
 	}
 
 	public Predicate<DialogPanel> getClosePredicate() {
@@ -158,38 +179,40 @@ public class DialogPanel extends GridPanel {
 		contentPane.setLayout(new JNodeLayout(contentPane, root));
 		contentPane.add(this, new NodeConstraints("root"));
 		contentPane.add(buttonBox, new NodeConstraints("root"));
-		
+
 		JRootPane rootPane = dialog.getRootPane();
 		if (getOkayButton().isDefaultCapable()) {
 			rootPane.setDefaultButton(getOkayButton());
 		}
-		
+
 		InputMap inputMap = rootPane.getInputMap(JButton.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		ActionMap actionMap = rootPane.getActionMap();
-		
+
 		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
 		String name = "CloseOnEscape";
 		inputMap.put(ks, name);
 		actionMap.put(name, new AbstractAction() {
 			private static final long serialVersionUID = 1L;
-		
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				closeButton.doClick();
 			}
 		});
-		
+
 		dialog.pack();
 		dialog.setLocationRelativeTo(owner);
 		dialog.setVisible(true);
 	}
-	
+
 	public void showInFrame() {
-		JFrame dialog = new JFrame();
+		JFrame frame = new JFrame();
+		frame.setDefaultCloseOperation(closeOperation);
+
 		if (title != null) {
-			dialog.setTitle(title);
+			frame.setTitle(title);
 		}
-		final Container contentPane = dialog.getContentPane();
+		final Container contentPane = frame.getContentPane();
 		final LayoutNode.VerticalNode root = new LayoutNode.VerticalNode("root");
 		root.setHorizontalAlignment(NodeAlignment.STRETCHED);
 		root.setVerticalAlignment(NodeAlignment.CENTER);
@@ -197,7 +220,7 @@ public class DialogPanel extends GridPanel {
 		contentPane.add(this, new NodeConstraints("root"));
 		contentPane.add(buttonBox, new NodeConstraints("root"));
 
-		JRootPane rootPane = dialog.getRootPane();
+		JRootPane rootPane = frame.getRootPane();
 		if (getOkayButton().isDefaultCapable()) {
 			rootPane.setDefaultButton(getOkayButton());
 		}
@@ -217,8 +240,8 @@ public class DialogPanel extends GridPanel {
 			}
 		});
 
-		dialog.pack();
-		dialog.setVisible(true);
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 	public void showInPanel(JPanel contentPane) {

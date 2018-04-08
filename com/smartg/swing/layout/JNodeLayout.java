@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Timer;
 
 import com.smartg.swing.layout.LayoutNode.LeafNode;
+import javax.swing.CellRendererPane;
 
 /**
  * JNodeLayoutis a node-based LayoutManager.
@@ -284,30 +285,23 @@ public class JNodeLayout implements LayoutManager2 {
      * JNodeLayout. Such components may be added direct to LayoutNode later.
      * @see NodeConstraints
      */
+    @Override
     public void addLayoutComponent(Component comp, Object constraints) {
         if (constraints == null || !(constraints instanceof NodeConstraints)) {
+            //ignore CellRendererPane
+            if(comp instanceof CellRendererPane) {
+                return;
+            }
+            if(!logStackTrace) {
+                return;
+            }
             Throwable ex = new Exception().fillInStackTrace();
             StackTraceElement[] stackTrace = ex.getStackTrace();
             // don't report adding Components without constraints from LeafNode
             if (stackTrace[3].getClassName().endsWith("LayoutNode$LeafNode")) {
                 return;
             }
-            String s = "";
-            if (logStackTrace) {
-                StringBuilder sb = new StringBuilder();
-                for (StackTraceElement elem : stackTrace) {
-                    sb.append("\n");
-                    sb.append(elem.getClassName());
-                    sb.append(".");
-                    sb.append(elem.getMethodName());
-                    sb.append(":");
-                    sb.append(elem.getLineNumber());
-                }
-                s = sb.toString();
-            }
-            Logger.getLogger(getClass().getName()).log(Level.WARNING,
-                    "Constraints are null or wrong type. Stack trace: \n" + s);
-
+            StackTraceUtil.warning("Constraints are null or wrong type. Stack trace: \n[" + constraints + "]", 5);
             return;
         }
         NodeConstraints constr = (NodeConstraints) constraints;
