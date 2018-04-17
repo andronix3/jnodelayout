@@ -301,7 +301,7 @@ public class JNodeLayout implements LayoutManager2 {
             if (stackTrace[3].getClassName().endsWith("LayoutNode$LeafNode")) {
                 return;
             }
-            StackTraceUtil.warning("Constraints are null or wrong type. Stack trace: \n[" + constraints + "]", 5);
+            //StackTraceUtil.warning("Constraints are null or wrong type. Stack trace: \n[" + constraints + "]", 5);
             return;
         }
         NodeConstraints constr = (NodeConstraints) constraints;
