@@ -1078,6 +1078,22 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 		}
 
+		public int getMinCellWidth() {
+			return gridModel.minCellWidth;
+		}
+
+		public void setMinCellWidth(int minCellWidth) {
+			gridModel.minCellWidth = minCellWidth;
+		}
+
+		public int getMinCellHeight() {
+			return gridModel.minCellHeight;
+		}
+
+		public void setMinCellHeight(int minCellHeight) {
+			gridModel.minCellHeight = minCellHeight;
+		}
+
 		@Override
 		public void paintNode(Graphics g, Rectangle dest) {
 			super.paintNode(g, dest);
@@ -1143,10 +1159,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		}
 	}
 
-	private static class GridModel {
+	private class GridModel {
 
 		private int[] cellWidth;
 		private int[] cellHeight;
+
+		int minCellWidth;
+		int minCellHeight;
 
 		void setGridWidth(int gridWidth) {
 			this.cellHeight = new int[gridWidth];
@@ -1157,7 +1176,9 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		}
 
 		Dimension getCellSize(int x, int y) {
-			return new Dimension(cellWidth[x], cellHeight[y]);
+			int width = Math.max(minCellWidth, cellWidth[x]);
+			int height = Math.max(minCellHeight, cellHeight[y]);
+			return new Dimension(width, height);
 		}
 
 		void setCellSize(int x, int y, int width, int height) {
