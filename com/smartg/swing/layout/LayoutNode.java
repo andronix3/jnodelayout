@@ -949,6 +949,7 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				Dimension cs = gridModel.getCellSize(0, y);
 				height += cs.height;
 			}
+
 			Insets insets = getNodeInsets();
 			width += insets.left + insets.right;
 			height += insets.top + insets.bottom;
@@ -1015,12 +1016,31 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 			Dimension preferredSize = preferredSize();
 
 			double mx = 1;
-			if (horizontalAlignment == NodeAlignment.STRETCHED) {
-				mx = dest.getWidth() / preferredSize.getWidth();
+			if (horizontalAlignment == NodeAlignment.STRETCHED && dest.width > preferredSize.width) {
+				int sum = gridModel.getFixedWidthSum();
+				int pw = preferredSize.width;
+				try {
+					mx = (dest.getWidth() - sum) / (pw - sum * 0.62);
+				} catch (Throwable t) {
+					// ignore
+				}
+				if (mx <= 0) {
+					mx = 1;
+				}
 			}
+
 			double my = 1;
-			if (verticalAlignment == NodeAlignment.STRETCHED) {
-				my = dest.getHeight() / preferredSize.getHeight();
+			if (verticalAlignment == NodeAlignment.STRETCHED && dest.height > preferredSize.height) {
+				int sum = gridModel.getFixedHeightsSum();
+				int ph = preferredSize.height;
+				try {
+					my = (dest.getHeight() - sum) / (ph - sum * 0.62);
+				} catch (Throwable t) {
+					// ignore
+				}
+				if (my <= 0) {
+					my = 1;
+				}
 			}
 
 			int dx = adjustX(dest.width - dest.x, preferredSize.width);
@@ -1035,13 +1055,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
-				int x = getXOffset(0, r.x) + dx;
-				double width = getXOffset(r.x, r.x + r.width);
-				int y = getYOffset(0, r.y) + dy;
-				double height = getYOffset(r.y, r.y + r.height);
+				int x = getXOffset(0, r.x, mx) + dx;
+				double width = getXOffset(r.x, r.x + r.width, mx);
+				int y = getYOffset(0, r.y, my) + dy;
+				double height = getYOffset(r.y, r.y + r.height, my);
 
 				Rectangle bounds = new Rectangle();
-				bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
+				bounds.setRect(dest.x + x, dest.y + y, width, height);
 				gl.layout(bounds);
 			}
 		}
@@ -1066,16 +1086,27 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
-				int x = getXOffset(0, r.x) + dx;
-				double width = getXOffset(r.x, r.x + r.width);
-				int y = getYOffset(0, r.y) + dy;
-				double height = getYOffset(r.y, r.y + r.height);
+				int x = getXOffset(0, r.x, mx) + dx;
+				double width = getXOffset(r.x, r.x + r.width, mx);
+				int y = getYOffset(0, r.y, my) + dy;
+				double height = getYOffset(r.y, r.y + r.height, my);
 
 				Rectangle bounds = new Rectangle();
-				bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
+				bounds.setRect(dest.x + x, dest.y + y, width, height);
 				gl.paintBorder(g, bounds);
 			}
 
+		}
+
+		public int getMaxCellWidth() {
+			return gridModel.maxCellWidth;
+		}
+
+		public void setMaxCellWidth(int maxCellWidth) {
+			gridModel.maxCellWidth = maxCellWidth;
+			if (gridModel.minCellWidth > maxCellWidth) {
+				gridModel.minCellWidth = maxCellWidth;
+			}
 		}
 
 		public int getMinCellWidth() {
@@ -1084,6 +1115,36 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 		public void setMinCellWidth(int minCellWidth) {
 			gridModel.minCellWidth = minCellWidth;
+			if (gridModel.maxCellWidth < minCellWidth) {
+				gridModel.maxCellWidth = minCellWidth;
+			}
+		}
+
+		public int getMaxCellHeight() {
+			return gridModel.maxCellHeight;
+		}
+
+		public void setMaxCellWidth(int x, int max) {
+			gridModel.setMaxCellWidth(x, max);
+		}
+
+		public void setMinCellWidth(int x, int min) {
+			gridModel.setMinCellWidth(x, min);
+		}
+
+		public void setMaxCellHeight(int y, int max) {
+			gridModel.setMaxCellHeight(y, max);
+		}
+
+		public void setMinCellHeight(int y, int min) {
+			gridModel.setMinCellHeight(y, min);
+		}
+
+		public void setMaxCellHeight(int maxCellHeight) {
+			gridModel.maxCellHeight = maxCellHeight;
+			if (gridModel.minCellHeight > maxCellHeight) {
+				gridModel.minCellHeight = maxCellHeight;
+			}
 		}
 
 		public int getMinCellHeight() {
@@ -1092,6 +1153,9 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 		public void setMinCellHeight(int minCellHeight) {
 			gridModel.minCellHeight = minCellHeight;
+			if (gridModel.maxCellHeight < minCellHeight) {
+				gridModel.maxCellHeight = minCellHeight;
+			}
 		}
 
 		@Override
@@ -1114,13 +1178,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
-				int x = getXOffset(0, r.x) + dx;
-				double width = getXOffset(r.x, r.x + r.width);
-				int y = getYOffset(0, r.y) + dy;
-				double height = getYOffset(r.y, r.y + r.height);
+				int x = getXOffset(0, r.x, mx) + dx;
+				double width = getXOffset(r.x, r.x + r.width, mx);
+				int y = getYOffset(0, r.y, my) + dy;
+				double height = getYOffset(r.y, r.y + r.height, my);
 
 				Rectangle bounds = new Rectangle();
-				bounds.setRect(dest.x + x * mx, dest.y + y * my, width * mx, height * my);
+				bounds.setRect(dest.x + x, dest.y + y, width, height);
 				gl.paintNode(g, bounds);
 			}
 		}
@@ -1131,21 +1195,27 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 			}
 		}
 
-		public int getXOffset(int from, int to) {
-			int mx = 0;
+		public int getXOffset(int from, int to, double d) {
+			int width = 0;
 
 			for (int x = from; x < to; x++) {
-				mx += gridModel.getCellSize(x, 0).width;
+				double w = gridModel.getCellSize(x, 0).width * d;
+				int max = gridModel.getMaxCellWidth(x);
+				int min = gridModel.getMinCellWidth(x);
+				width += Math.min(Math.max(w, min), max);
 			}
-			return mx;
+			return width;
 		}
 
-		public int getYOffset(int from, int to) {
-			int my = 0;
+		public int getYOffset(int from, int to, double d) {
+			int height = 0;
 			for (int y = from; y < to; y++) {
-				my += gridModel.getCellSize(0, y).height;
+				int h = gridModel.getCellSize(0, y).height;
+				int max = gridModel.getMaxCellHeight(y);
+				int min = gridModel.getMinCellHeight(y);
+				height += Math.min(Math.max(h, min), max);
 			}
-			return my;
+			return height;
 		}
 
 		@Override
@@ -1164,32 +1234,149 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 		private int[] cellWidth;
 		private int[] cellHeight;
 
-		int minCellWidth;
-		int minCellHeight;
+		private Integer[] minCellWidths;
+		private Integer[] minCellHeights;
 
-		void setGridWidth(int gridWidth) {
-			this.cellHeight = new int[gridWidth];
+		private Integer[] maxCellWidths;
+		private Integer[] maxCellHeights;
+
+		private int minCellWidth = 0;
+		private int minCellHeight = 0;
+
+		private int maxCellWidth = 10000;
+		private int maxCellHeight = 10000;
+
+		int getFixedWidthSum() {
+			int sum = 0;
+			for (int x = 0; x < maxCellWidths.length; x++) {
+				if (maxCellWidths[x] != null) {
+					sum += maxCellWidths[x];
+				}
+			}
+			return sum;
 		}
 
-		void setGridHeight(int gridHeight) {
-			this.cellWidth = new int[gridHeight];
+		int getFixedHeightsSum() {
+			int sum = 0;
+			for (int y = 0; y > maxCellHeights.length; y++) {
+				if (maxCellHeights[y] != null) {
+					sum += maxCellHeights[y];
+				}
+			}
+			return sum;
+		}
+
+		void setMinCellWidth(int x, int min) {
+			if (this.minCellWidths == null) {
+				this.minCellWidths = new Integer[x + 1];
+			}
+			if (this.minCellWidths.length <= x) {
+				this.minCellWidths = Arrays.copyOf(this.minCellWidths, x + 5);
+			}
+			this.minCellWidths[x] = min;
+		}
+
+		void setMaxCellWidth(int x, int min) {
+			if (this.maxCellWidths == null) {
+				this.maxCellWidths = new Integer[x + 1];
+			}
+			if (this.maxCellWidths.length <= x) {
+				this.maxCellWidths = Arrays.copyOf(this.maxCellWidths, x + 5);
+			}
+			this.maxCellWidths[x] = min;
+		}
+
+		void setMinCellHeight(int y, int min) {
+			if (this.minCellHeights == null) {
+				this.minCellHeights = new Integer[y + 1];
+			}
+			if (this.minCellHeights.length <= y) {
+				this.minCellHeights = Arrays.copyOf(this.minCellHeights, y + 5);
+			}
+			this.minCellHeights[y] = min;
+		}
+
+		void setMaxCellHeight(int y, int min) {
+			if (maxCellHeights == null) {
+				maxCellHeights = new Integer[y + 1];
+			}
+			if (maxCellHeights.length <= y) {
+				maxCellHeights = Arrays.copyOf(this.maxCellHeights, y + 5);
+			}
+			maxCellHeights[y] = min;
+		}
+
+		void setGridHeight(int size) {
+			this.cellHeight = new int[size];
+			if (this.minCellHeights == null) {
+				this.minCellHeights = new Integer[size];
+			} else {
+				this.minCellHeights = Arrays.copyOf(this.minCellHeights, size);
+			}
+			if (this.maxCellHeights == null) {
+				this.maxCellHeights = new Integer[size];
+			} else {
+				this.maxCellHeights = Arrays.copyOf(this.minCellHeights, size);
+			}
+		}
+
+		void setGridWidth(int size) {
+			this.cellWidth = new int[size];
+			if (this.minCellWidths == null) {
+				this.minCellWidths = new Integer[size];
+			} else {
+				this.minCellWidths = Arrays.copyOf(this.minCellWidths, size);
+			}
+			if (this.maxCellWidths == null) {
+				this.maxCellWidths = new Integer[size];
+			} else {
+				this.maxCellWidths = Arrays.copyOf(this.maxCellWidths, size);
+			}
+		}
+
+		private int getMaxCellWidth(int index) {
+			if (this.maxCellWidths == null || this.maxCellWidths[index] == null) {
+				return this.maxCellWidth;
+			}
+			return this.maxCellWidths[index];
+		}
+
+		private int getMaxCellHeight(int index) {
+			if (this.maxCellHeights == null || this.maxCellHeights[index] == null) {
+				return this.maxCellHeight;
+			}
+			return this.maxCellHeights[index];
+		}
+
+		private int getMinCellWidth(int index) {
+			if (this.minCellWidths == null || this.minCellWidths[index] == null) {
+				return this.minCellWidth;
+			}
+			return this.minCellWidths[index];
+		}
+
+		private int getMinCellHeight(int index) {
+			if (this.minCellHeights == null || this.minCellHeights[index] == null) {
+				return minCellHeight;
+			}
+			return this.minCellHeights[index];
 		}
 
 		Dimension getCellSize(int x, int y) {
-			int width = Math.max(minCellWidth, cellWidth[x]);
-			int height = Math.max(minCellHeight, cellHeight[y]);
+			int width = Math.min(getMaxCellWidth(x), Math.max(getMinCellWidth(x), this.cellWidth[x]));
+			int height = Math.min(getMaxCellHeight(y), Math.max(getMinCellHeight(y), this.cellHeight[y]));
 			return new Dimension(width, height);
 		}
 
 		void setCellSize(int x, int y, int width, int height) {
-			if (x >= cellWidth.length) {
-				cellWidth = Arrays.copyOf(cellWidth, x + 5);
+			if (x >= this.cellWidth.length) {
+				this.cellWidth = Arrays.copyOf(this.cellWidth, x + 5);
 			}
-			if (y >= cellHeight.length) {
-				cellHeight = Arrays.copyOf(cellHeight, y + 5);
+			if (y >= this.cellHeight.length) {
+				this.cellHeight = Arrays.copyOf(this.cellHeight, y + 5);
 			}
-			cellWidth[x] = Math.max(cellWidth[x], width);
-			cellHeight[y] = Math.max(cellHeight[y], height);
+			this.cellWidth[x] = Math.max(this.cellWidth[x], width);
+			this.cellHeight[y] = Math.max(this.cellHeight[y], height);
 		}
 	}
 }
