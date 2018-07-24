@@ -32,6 +32,16 @@ public class GridHelper {
         softInit();
     }
 
+    public void setHgap(int gap) {
+        LayoutNode node = nodeLayout.getNode(gridName);
+        node.setHgap(gap);
+    }
+
+    public void setVgap(int gap) {
+        LayoutNode node = nodeLayout.getNode(gridName);
+        node.setVgap(gap);
+    }
+
     private void softInit() {
         try {
             init();
