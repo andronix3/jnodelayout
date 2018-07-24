@@ -80,6 +80,22 @@ public class GridPanel extends JPanel {
 		}
 	}
 
+	public void setMinCellWidth(int w) {
+		helper.setMinCellWidth(w);
+	}
+
+	public void setMinCellHeight(int w) {
+		helper.setMinCellHeight(w);
+	}
+
+	public void setMaxCellWidth(int w) {
+		helper.setMaxCellWidth(w);
+	}
+
+	public void setMaxCellHeight(int w) {
+		helper.setMaxCellHeight(w);
+	}
+
 	public final void skip(int w) {
 		helper.skip(w);
 	}
