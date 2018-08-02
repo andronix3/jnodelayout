@@ -148,12 +148,15 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 	}
 
 	public void paintBorder(Graphics g, Rectangle r) {
-		if (border != null) {
+		if (border != null && g != null) {
 			border.paintBorder(getTarget(), g, r.x, r.y, r.width, r.height);
 		}
 	}
 
 	public void paintNode(Graphics g, Rectangle r) {
+		if (g == null) {
+			return;
+		}
 		Graphics2D g2 = (Graphics2D) g.create();
 		g2.setColor(Color.RED);
 		g2.setStroke(new BasicStroke(2));
@@ -1016,31 +1019,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 			Dimension preferredSize = preferredSize();
 
 			double mx = 1;
-			if (horizontalAlignment == NodeAlignment.STRETCHED && dest.width > preferredSize.width) {
-				int sum = gridModel.getFixedWidthSum();
-				int pw = preferredSize.width;
-				try {
-					mx = (dest.getWidth() - sum) / (pw - sum * 0.62);
-				} catch (Throwable t) {
-					// ignore
-				}
-				if (mx <= 0) {
-					mx = 1;
-				}
+			if (horizontalAlignment == NodeAlignment.STRETCHED) {
+				mx = dest.getWidth() / preferredSize.getWidth();
 			}
 
 			double my = 1;
-			if (verticalAlignment == NodeAlignment.STRETCHED && dest.height > preferredSize.height) {
-				int sum = gridModel.getFixedHeightsSum();
-				int ph = preferredSize.height;
-				try {
-					my = (dest.getHeight() - sum) / (ph - sum * 0.62);
-				} catch (Throwable t) {
-					// ignore
-				}
-				if (my <= 0) {
-					my = 1;
-				}
+			if (verticalAlignment == NodeAlignment.STRETCHED) {
+				my = dest.getHeight() / preferredSize.getHeight();
 			}
 
 			int dx = adjustX(dest.width - dest.x, preferredSize.width);
@@ -1084,6 +1069,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 			int dx = adjustX(dest.width - dest.x, preferredSize.width);
 			int dy = adjustY(dest.height - dest.y, preferredSize.height);
 
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
+
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
 				int x = getXOffset(0, r.x, mx) + dx;
@@ -1095,7 +1087,6 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 				bounds.setRect(dest.x + x, dest.y + y, width, height);
 				gl.paintBorder(g, bounds);
 			}
-
 		}
 
 		public int getMaxCellWidth() {
@@ -1175,6 +1166,13 @@ public abstract class LayoutNode implements Iterable<LayoutNode> {
 
 			int dx = adjustX(dest.width - dest.x, preferredSize.width);
 			int dy = adjustY(dest.height - dest.y, preferredSize.height);
+
+			Insets insets = getNodeInsets();
+
+			dest.x += insets.left;
+			dest.y += insets.top;
+			dest.width -= insets.left + insets.right;
+			dest.height -= insets.top + insets.bottom;
 
 			for (LayoutNode gl : this) {
 				Rectangle r = map.get(gl);
