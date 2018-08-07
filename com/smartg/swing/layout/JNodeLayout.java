@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Timer;
 
 import com.smartg.swing.layout.LayoutNode.LeafNode;
+import java.util.Objects;
 import javax.swing.CellRendererPane;
 
 /**
@@ -56,12 +57,13 @@ public class JNodeLayout implements LayoutManager2 {
 
     private static final boolean logStackTrace = false;
 
-    private HashMap<String, LayoutNode> map = new HashMap<String, LayoutNode>();
-    private HashMap<Component, LayoutNode.LeafNode> byComponent = new HashMap<Component, LayoutNode.LeafNode>();
+    private final HashMap<String, LayoutNode> map = new HashMap<>();
+    private final HashMap<Component, LayoutNode.LeafNode> byComponent = new HashMap<>();
 
     private final LayoutNode root;
     private Timer debugTimer = new Timer(500, new ActionListener() {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Container parent = root.getTarget();
             if (parent != null) {
@@ -126,7 +128,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setHorizontalAlignment(alignment);
         } else {
-            Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+            StackTraceUtil.warning("LayoutNode " + nodeName + " not found.");
         }
     }
 
@@ -141,7 +143,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setVerticalAlignment(alignment);
         } else {
-            Logger.getGlobal().warning("LayoutNode " + nodeName + " not found.");
+            StackTraceUtil.warning("LayoutNode " + nodeName + " not found.");
         }
     }
 
@@ -156,7 +158,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setHorizontalAlignment(alignment);
         } else {
-            Logger.getGlobal().warning("LeafNode not found for " + comp);
+            StackTraceUtil.warning("LeafNode not found for " + comp);
         }
     }
 
@@ -165,7 +167,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setHgap(hgap);
         } else {
-            Logger.getGlobal().warning("LeafNode not found for " + comp);
+            StackTraceUtil.warning("LeafNode not found for " + comp);
         }
     }
 
@@ -174,7 +176,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setVgap(vgap);
         } else {
-            Logger.getGlobal().warning("LeafNode not found for " + comp);
+            StackTraceUtil.warning("LeafNode not found for " + comp);
         }
     }
 
@@ -189,7 +191,7 @@ public class JNodeLayout implements LayoutManager2 {
         if (gl != null) {
             gl.setVerticalAlignment(alignment);
         } else {
-            Logger.getGlobal().warning("LeafNode not found for " + comp);
+            StackTraceUtil.warning("LeafNode not found for " + comp);
         }
     }
 
@@ -214,10 +216,12 @@ public class JNodeLayout implements LayoutManager2 {
     /**
      * This method does nothing
      */
+    @Override
     public void addLayoutComponent(String name, Component comp) {
         Logger.getLogger(getClass().getName()).log(Level.WARNING, "Method not implementd");
     }
 
+    @Override
     public void removeLayoutComponent(Component comp) {
         LeafNode leaf = byComponent.remove(comp);
         if (leaf != null) {
@@ -229,6 +233,7 @@ public class JNodeLayout implements LayoutManager2 {
         return map.get(name);
     }
 
+    @Override
     public Dimension preferredLayoutSize(Container parent) {
         Insets insets = parent.getInsets();
         Dimension preferredSize = root.preferredSize();
@@ -240,6 +245,7 @@ public class JNodeLayout implements LayoutManager2 {
         return preferredSize;
     }
 
+    @Override
     public Dimension minimumLayoutSize(Container parent) {
         return preferredLayoutSize(parent);
     }
@@ -260,6 +266,7 @@ public class JNodeLayout implements LayoutManager2 {
         return root.getHgap();
     }
 
+    @Override
     public void layoutContainer(Container parent) {
         Rectangle bounds = parent.getBounds();
         Insets insets = parent.getInsets();
@@ -301,7 +308,7 @@ public class JNodeLayout implements LayoutManager2 {
             if (stackTrace[3].getClassName().endsWith("LayoutNode$LeafNode")) {
                 return;
             }
-            //StackTraceUtil.warning("Constraints are null or wrong type. Stack trace: \n[" + constraints + "]", 5);
+            StackTraceUtil.warning("Constraints are null or wrong type. Stack trace: \n[" + constraints + "]", 5);
             return;
         }
         NodeConstraints constr = (NodeConstraints) constraints;
@@ -346,8 +353,11 @@ public class JNodeLayout implements LayoutManager2 {
     private void putNode(LayoutNode node) {
         LayoutNode oldNode = map.get(node.getName());
         if (oldNode != null) {
-            Logger.getGlobal().log(Level.WARNING,
-                    "Warning: node with key \"" + node.getName() + "\" already exists " + oldNode.hashCode());
+            String message = "Warning: node with key \"" + node.getName() + "\" already exists " + oldNode.hashCode();
+            StackTraceUtil.warning(message);
+        }
+        if(Objects.equals(node, oldNode)) {
+            return;
         }
         map.put(node.getName(), node);
     }
@@ -372,18 +382,22 @@ public class JNodeLayout implements LayoutManager2 {
         }
     }
 
+    @Override
     public Dimension maximumLayoutSize(Container target) {
         return root.preferredSize();
     }
 
+    @Override
     public float getLayoutAlignmentX(Container target) {
         return 0;
     }
 
+    @Override
     public float getLayoutAlignmentY(Container target) {
         return 0;
     }
 
+    @Override
     public void invalidateLayout(Container target) {
 
     }
