@@ -191,11 +191,9 @@ public class DialogPanel extends GridPanel {
 
     public JDialog showInDialog(Window owner) {
         JDialog dialog = createDialog(owner);
-        SwingUtilities.invokeLater(() -> {
-            dialog.pack();
-            dialog.setLocationRelativeTo(owner);
-            dialog.setVisible(true);
-        });
+        dialog.pack();
+        dialog.setLocationRelativeTo(owner);
+        dialog.setVisible(true);
         return dialog;
     }
 
