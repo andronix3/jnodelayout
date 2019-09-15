@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -186,16 +187,32 @@ public class DialogPanel extends GridPanel {
     }
 
     public JDialog showInDialog(Component c) {
-        return showInDialog(SwingUtilities.getWindowAncestor(c));
+        return showInDialog(c, true);
+    }
+
+    public JDialog showInDialog(Component c, boolean modal) {
+    	return showInDialog(SwingUtilities.getWindowAncestor(c), modal);
     }
 
     public JDialog showInDialog(Window owner) {
-        JDialog dialog = createDialog(owner);
+    	return showInDialog(owner, true);
+    }
+
+    public JDialog showInDialog(Window owner, boolean modal) {
+    	return showInDialog(owner, modal? determineModality(owner): Dialog.ModalityType.MODELESS);
+    }
+    
+    public JDialog showInDialog(Window owner, Dialog.ModalityType modalityType) {
+    	JDialog dialog = createDialog(owner, modalityType);
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
         dialog.setVisible(true);
         return dialog;
     }
+
+	private ModalityType determineModality(Window owner) {
+		return owner != null? Dialog.ModalityType.DOCUMENT_MODAL: Dialog.ModalityType.APPLICATION_MODAL;
+	}
 
     /**
      * Show dialog at specified location point
@@ -206,7 +223,7 @@ public class DialogPanel extends GridPanel {
      * CENTER
      */
     public JDialog showInDialog(Window owner, Point location, int placement) {
-        JDialog dialog = createDialog(owner);
+        JDialog dialog = createDialog(owner, determineModality(owner));
 
         SwingUtilities.invokeLater(() -> {
             dialog.pack();
@@ -233,8 +250,8 @@ public class DialogPanel extends GridPanel {
         return dialog;
     }
 
-    private JDialog createDialog(Window owner) {
-        JDialog dialog = new JDialog(owner, Dialog.ModalityType.APPLICATION_MODAL);
+    private JDialog createDialog(Window owner, Dialog.ModalityType modalityType) {
+        JDialog dialog = new JDialog(owner, modalityType);
         if (title != null) {
             dialog.setTitle(title);
         }
