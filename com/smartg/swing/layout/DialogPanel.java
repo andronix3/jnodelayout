@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
 import javax.swing.AbstractAction;
@@ -43,6 +45,8 @@ public class DialogPanel extends GridPanel {
 
 	private final JButton closeButton = new JButton("Close");
 	private final JButton okayButton = new JButton("Okay");
+
+	private Callable<Boolean> onOkayButtonAction = () -> true;
 
 	private final GridPanel buttonBox = new GridPanel(20);
 	private final GridPanel systemButtonBox = new GridPanel(20);
@@ -93,13 +97,24 @@ public class DialogPanel extends GridPanel {
 		});
 		okayButton.addActionListener(e -> {
 			canceled = false;
-			if (closeDialogOnOkayClick) {
-				closeDialog();
+			try {
+				if (onOkayButtonAction.call()) {
+					if (closeDialogOnOkayClick) {
+						closeDialog();
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				// TODO show error or close dialog?
 			}
 		});
 	}
+	
+	public void setOnOkayButtonAction(Callable<Boolean> r) {
+		onOkayButtonAction = Objects.requireNonNull(r);
+	}	
 
-	private void closeDialog() {
+	public void closeDialog() {
 		Window ancestor = SwingUtilities.getWindowAncestor(this);
 		if (ancestor != null) {
 			switch (closeOperation) {
